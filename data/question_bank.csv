@@ -1,0 +1,399 @@
+question_id,concept,prerequisite_concept,question,option_A,option_B,option_C,option_D,difficulty,correct_answer,common_error_type,option_error_mapping,explanation
+VAR_001,Variables & assignment,None,"What is the output of the following code?
+a = 10
+b = a
+a = 25
+print(b)",25,10,35,NameError,Easy,B,Assignment treated as a live link between variables,A → b is believed to track a after a is reassigned; C → values are believed to be summed; D → believes a variable cannot be reassigned,"The assignment b = a copies the reference to value 10 into b. Reassigning a = 25 afterwards does not mutate b. Therefore, b remains 10."
+VAR_002,Variables & assignment,Variables & assignment,"What is the output of the following code?
+x = 4
+y = 9
+x = y
+y = x
+print(x, y)",9 4,4 9,9 9,4 4,Easy,C,Incomplete variable swap without temporary storage,A → believes sequential cross-assignment successfully swaps values; B → believes assignment does not mutate original values; D → reverses the overwrite direction,"The line x = y assigns the value 9 to x, overwriting its previous value 4. When y = x executes, x is already 9, so y remains 9. The final output is 9 9."
+VAR_003,Variables & assignment,Expressions & operators,"What is the output of the following code?
+a = 2
+b = 5
+a, b = b, a + b
+print(a, b)",5 10,5 7,2 7,7 5,Medium,B,Sequential right-hand side evaluation misconception,A → sequentially evaluates right-hand side using the new a (5) in a + b; C → assigns only the second target; D → reverses the assignment unpacking order,"In Python simultaneous assignment, the entire right-hand side (b, a + b) is evaluated first using current values, yielding (5, 7). These values are then unpacked into a and b."
+VAR_004,Variables & assignment,Expressions & operators,"What is the output of the following code?
+x = 3
+x = x + 4
+y = x * 2
+x = y - x
+print(x, y)",7 14,3 14,11 14,7 7,Medium,	A,Failure to track cumulative variable updates,B → uses the initial x (3) instead of updated x (7); C → mistakenly adds y and x instead of subtracting; D → assumes x equals y at the end,"Tracing execution step-by-step: x becomes $3 + 4 = 7$; y becomes $7 \times 2 = 14$; x is reassigned to $14 - 7 = 7$. Thus, x is 7 and y is 14."
+VAR_005,Variables & assignment,Expressions & operators,"What is the output of the following code?
+p, q = 3, 4
+p, q = p * q, p + q
+p, q = q, p - q
+print(p, q)",12 7,7 5,5 7,7 1,Hard,B,Multi-step simultaneous state tracing breakdown,"A → stops after the second line, missing the third assignment; C → inverts target assignment unpacking in the final line; D → calculates p - q using initial values (4 - 3)","Step 1: p = 3, q = 4. Step 2: right-hand side evaluates to (12, 7), binding p = 12, q = 7. Step 3: right-hand side evaluates to (7, 12 - 7) which is (7, 5), binding p = 7, q = 5. The output is 7 5."
+TYP_001,Data types,Variables & assignment,"What is the output of the following code?
+x = 4 / 2
+y = 4 // 2
+print(type(x).__name__, type(y).__name__)",int int,float int,float float,int float,Easy,B,Float vs integer division return type confusion,A → assumes true division / returns int for whole divisions; C → assumes floor division // always returns float; D → reverses the behaviors of / and //,"The true division operator / always returns a float (producing 2.0). The floor division operator // on integer operands performs integer truncation, returning an int (producing 2)."
+TYP_002,Data types,Variables & assignment,"What is the output of the following code?
+a = ""10""
+b = ""20""
+c = 10
+d = 20
+print(a + b, c + d)",30 30,1020 1020,1020 30,TypeError,Easy,C,Implicit type coercion misconception on operator +,A → believes string literals are automatically coerced to numbers; B → believes numbers are automatically coerced to strings; D → believes mixed operations raise TypeError,"For string operands, + performs string concatenation: ""10"" + ""20"" produces ""1020"". For integers, + performs arithmetic addition: 10 + 20 produces 30."
+TYP_003,Data types,Variables & assignment,"What is the output of the following code?
+print(bool(""False""), bool(""""), bool(0))",False False False,True False False,False True False,True True False,Medium,B,String literal truthiness vs boolean representation,"A → believes the string ""False"" evaluates to False based on its textual meaning; C → believes empty strings evaluate to True; D → believes all strings evaluate to True","In Python, any non-empty string has a truth value of True, regardless of its content, so bool(""False"") is True. An empty string """" and numeric 0 are falsy, returning False."
+TYP_004,Data types,Variables & assignment,"What happens when the following code is executed?
+val = ""3.14""
+res = int(val)
+print(res)",It prints 3,It prints 3.14,ValueError is raised,TypeError is raised,Medium,	C,String float literal parsing restriction of int(),A → believes int() automatically truncates the decimal portion of a string; B → believes int() parses the string without type change; D → confuses ValueError with TypeError,"int() cannot directly parse a string containing a decimal point; it raises ValueError. To convert ""3.14"" to an integer, it must first be converted via float(""3.14"")."
+TYP_005,Data types,Variables & assignment; Expressions & operators,"What is the output of the following code?
+x = ""5""
+y = 2
+z = x * y
+w = len(z) + float(y)
+print(type(z).__name__, w)",int 12.0,str 4.0,str 4,TypeError,Hard,B,Type evaluation across mixed dynamic operations,"A → believes ""5"" * 2 performs arithmetic multiplication to 10; C → misses float type promotion in int + float arithmetic; D → believes multiplying string by int is invalid","x * y replicates the string ""5"" twice, yielding z = ""55"" of type str. len(z) is integer 2, while float(y) is 2.0. Adding integer 2 to float 2.0 promotes the result to float 4.0. Output is str 4.0."
+EXP_001,Expressions & operators,Data types; Variables & assignment,"What is the output of the following code?
+result = 2 + 3 * 4
+print(result)",20,14,24,9,Easy,B,Left-to-right evaluation ignoring operator precedence,A → evaluates strictly left to right as (2 + 3) * 4; C → multiplies all operands together; D → confuses operators,Multiplication * has higher precedence than addition +. The expression evaluates as 2 + (3 * 4) = 2 + 12 = 14.
+EXP_002,Expressions & operators,Data types; Variables & assignment,"What is the output of the following code?
+q = 17 // 5
+r = 17 % 5
+print(q, r)",3.4 2,3 2,2 3,3 1,Easy,B,Confusing floor division with float division or swapping results,A → treats // as true division /; C → swaps quotient and remainder; D → computes incorrect remainder,Floor division 17 // 5 computes integer quotient 3. Modulo 17 % 5 computes remainder 2. The printed output is 3 2.
+EXP_003,Expressions & operators,Data types,"What is the output of the following code?
+val1 = -3 ** 2
+val2 = (-3) ** 2
+print(val1, val2)",9 9,-9 9,-9 -9,9 -9,Medium,B,Unary minus vs exponentiation operator precedence,A → assumes unary minus binds tighter than exponentiation; C → assumes parentheses have no effect on sign; D → reverses the evaluation order,"Exponentiation ** binds tighter than unary minus -. Thus -3 ** 2 is parsed as -(3 ** 2) = -9. Parentheses force negation first in (-3) ** 2, producing 9. Output: -9 9."
+EXP_004,Expressions & operators,Data type,"What is the output of the following code?
+res = 2 ** 3 ** 2
+print(res)",64,512,36,18,Medium,B,Misunderstanding right-associativity of exponentiation,A → evaluates left to right as (2 ** 3) ** 2 = 8 ** 2; C → multiplies exponents; D → multiplies all numbers,"Exponentiation is right-associative in Python. 2 ** 3 ** 2 evaluates as 2^(3^2) = 2^9 = 512. Evaluating left-to-right produces 64, which is a common misconception."
+EXP_005,Expressions & operators,Data types; Variables & assignment,"What is the output of the following code?
+a = -14 // 4
+b = -14 % 4
+print(a, b)",-3 -2,-3 2,-4 2,-4 -2,Hard,C,Truncation towards zero misconception for negative numbers,A → assumes C-style truncation towards zero (-3) with negative remainder (-2); B → assumes truncation towards zero with positive remainder; D → gets quotient right but assumes negative remainder,"Python floor division rounds towards negative infinity: -14 / 4 = -3.5, which floors to -4. Modulo satisfies a = (a // b) * b + r, so -14 = (-4)* 4 + r -> r = 2. Output: -4 2."
+STR_001,Strings,Data types; Expressions & operators,"What is the output of the following code?
+word = ""Python""
+print(word[-2])",h,o,n,IndexError,Easy,B,Negative indexing off-by-one / end-counting error,A → counts negative indices from the beginning or off-by-one; C → assumes -2 refers to the last element (0-based negative index); D → believes negative indexing is invalid,"In Python, negative index -1 refers to the last character ('n'), and -2 refers to the second-to-last character ('o'). The code prints o."
+STR_002,Strings,Data types,"What happens when the following code is executed?
+text = ""hello""
+text[0] = ""H""
+print(text)",It prints Hello,It prints hello,TypeError is raised,ValueError is raised,Easy,C,String immutability violation (item assignment),A → assumes strings are mutable like lists; B → assumes invalid assignment is silently ignored; D → confuses TypeError with ValueError,"Strings in Python are immutable data types. Attempting to modify an individual character via item assignment text[0] = ""H"" raises a TypeError."
+STR_003,Strings,Expressions & operators,"What is the output of the following code?
+s = ""Computer""
+print(s[1:6:2])",ompu,opt,opte,Cmu,Medium,B,Slicing bounds and step evaluation misconception,A → ignores step parameter (takes all characters from index 1 to 5); C → includes the stop index 6; D → starts slicing at index 0 instead of index 1,"The slice [1:6:2] starts at index 1 ('o'), stops strictly before index 6, stepping by 2. It selects indices 1 ('o'), 3 ('p'), and 5 ('t'), producing ""opt""."
+STR_004,Strings,Variables & assignment,"What is the output of the following code?
+s = ""python""
+s.replace(""p"", ""j"")
+print(s)",jython,python,None,AttributeError,Medium,B,String method in-place mutation misconception,A → assumes string methods modify the string in place; C → assumes in-place method leaves variable bound to None; D → believes replace is not a valid string method,"Strings are immutable. String methods like .replace() return a newly constructed string rather than modifying the existing object in place. Since the return value is not reassigned, s remains ""python""."
+STR_005,Strings,Expressions & operators,"What is the output of the following code?
+text = ""program""
+slice1 = text[10:]
+slice2 = text[::-2]
+print(repr(slice1), slice2)",IndexError is raised,' mrop,' mrop,' por,Hard,C,Out-of-bounds slice error assumption and negative step tracing,A → assumes slicing past the string length raises IndexError; B → confuses empty string with a whitespace string; D → reverses step direction or miscalculates parity of indices,"Slicing out of bounds in Python never raises IndexError; it truncates gracefully, so text[10:] returns an empty string ''. A step of -2 reverses the string taking every second element starting from the end: indices 6 ('m'), 4 ('r'), 2 ('o'), 0 ('p'), yielding 'mrop'."
+BOOL_001,Boolean expressions,Variables & assignment,"What is the output of the following code?
+x = 5
+ans1 = (x == 5)
+ans2 = (x != 5)
+print(ans1, ans2)",True False,False True,True True,SyntaxError,Easy,A,Equality comparison vs inequality logic inversion,B → inverts the logic of == and !=; C → believes both comparisons evaluate to True; D → confuses comparison in parentheses with assignment,"x == 5 tests equality, which evaluates to True. x != 5 tests inequality, which evaluates to False. The output printed is True False."
+BOOL_002,Boolean expressions,Expressions & operators,"What is the output of the following code?
+res1 = not True and False
+res2 = not (True and False)
+print(res1, res2)",False False,True True,False True,True False,Easy,C,Logical operator precedence (not vs and),A → overlooks the effect of parentheses on res2; B → believes not applies to the entire expression in res1; D → inverts both results,"not has higher precedence than and. Thus not True and False is (not True) and False = False and False = False. In res2, True and False is False, so not False is True. Output: False True."
+BOOL_003,Boolean expressions,Expressions & operators; Variables & assignment,"What is the output of the following code?
+x = 5
+cond1 = 1 < x < 5
+cond2 = 1 < x <= 5
+print(cond1, cond2)",True True,False False,False True,True False,Medium,C,Chained comparison boundary inclusion misconception,"A → evaluates (1 < x) as True, then True < 5 (1 < 5) as True; B → believes chained comparison syntax is invalid; D → misreads comparison operators","Chained comparisons expand as: 1 < x < 5 becomes (1 < 5) and (5 < 5), which is True and False = False. 1 < x <= 5 expands to (1 < 5) and (5 <= 5), which is True and True = True. Output is False True."
+BOOL_004,Boolean expressions,Expressions & operators; Data types,"What is the output of the following code?
+val1 = 0 or ""Python""
+val2 = 10 and 20
+print(val1, val2)",True True,0 10,Python 20,Python 10,Medium,C,Logical short-circuit return value type misconception,A → believes or and and always return boolean True/False; B → believes logical operators always return the first operand; D → assumes and returns the first operand on truthy,"Python logical operators return the value of the determining operand. For or, 0 is falsy, so it evaluates and returns ""Python"". For and, 10 is truthy, so it evaluates and returns the second operand 20."
+BOOL_005,Boolean expressions,Expressions & operators; Variables & assignment,"What happens when the following code is executed?
+a = 0
+b = 10
+check = (a != 0) and (b / a > 2)
+print(check)",ZeroDivisionError is raised,It prints False,It prints True,TypeError is raised,Hard,B,Short-circuit evaluation failure assumption (eager evaluation),A → assumes Python evaluates all subexpressions before determining truth value; C → guesses expression evaluates to True; D → confuses ZeroDivisionError with TypeError,"In Python, logical and short-circuits: if the first operand is False, the overall expression cannot be true, so the right-hand side (b / a > 2) is never evaluated. Because a != 0 is False, the division by zero is bypassed, and check becomes False."
+FUN_001,Functions,Variables & assignment; Expressions & operators,"What is printed by this code?
+
+def double(x): 
+    return x * 2
+
+print(double(3))",3,5,6,Error,Easy,C,Confusing parameter with result,A -> assumes the parameter is printed; B -> adds instead of multiplying; D -> misunderstands a valid function call.,"double receives 3 and returns 3 * 2, so print displays 6."
+FUN_002,Functions,Variables & assignment; Expressions & operators,"What value is assigned to result? 
+            
+def add(a, b): 
+    return a + b
+result = add(2, 4)",2,4,6,None,Easy,C,Confusing arguments with return value,A -> chooses the first argument; B -> chooses the second argument; D -> assumes every function call returns None.,"The return expression evaluates to 2 + 4 = 6, which is assigned to result."
+FUN_003,Functions,Variables & assignment,"What is printed? 
+
+def greet(name): 
+    print('Hi', name)
+
+answer = greet('Lan')
+print(answer)",Hi Lan followed by None,None followed by Hi Lan,Hi Lan followed by Hi Lan,Nothing,Medium,A,Confusing print with return,B -> reverses call order; C -> assumes print also returns the printed text; D -> misses both print statements.,"greet prints Hi Lan but has no return statement, so answer is None and the second print displays it."
+FUN_004,Functions,Expressions & operators,"Which value is returned by calculate(5)?
+ 
+def calculate(x): 
+    y = x - 1
+    return y * 3",5,4,12,15,Medium,C,Using the argument instead of the returned expression,A -> returns the input; B -> returns the intermediate value; D -> multiplies x by 3 instead of y by 3.,"Inside the function y becomes 4, then y * 3 returns 12."
+FUN_005,Functions,Variables & assignment; Expressions & operators,"What is printed? 
+def power(base, exponent=2): 
+    return base ** exponent 
+
+print(power(3))
+print(power(2, 3))",3 then 6,9 then 8,9 then 6,Error because exponent is optional,Hard,B,Misunderstanding default parameters and exponentiation,A -> ignores exponentiation; C -> uses the default for the second call; D -> rejects a valid default parameter.,The first call uses exponent 2 and returns 9; the second explicitly uses exponent 3 and returns 8.
+WHI_001,While loops,Boolean expressions; Variables & assignment,"What is printed? 
+
+n = 0 
+while n < 3: 
+    print(n) 
+    n += 1",0 1 2,0 1 2 3,1 2 3,Nothing,Easy,A,Off-by-one / incorrect loop initialization,B -> includes the stop value; C -> starts at 1; D -> misses the true condition.,"The loop runs while n is 0, 1, and 2; n becomes 3 and the condition is false."
+WHI_002,While loops,Boolean expressions,"When does this loop stop? 
+
+x = 5 
+while x > 2: 
+    x -= 1",When x is 5,When x is 3,When x is 2,It never stops,Easy,C,Checking the body before the update,A -> treats the initial value as the stopping point; B -> stops while the condition is still true; D -> misses the decreasing update.,"After the updates x becomes 2, and x > 2 is false."
+WHI_003,While loops,Variables & assignment; Boolean expressions,"What is the main problem?  
+ 
+i = 1 
+
+while i <= 3: 
+    print(i)",The condition is invalid,"i is never updated, so the loop is infinite",print cannot be used in a loop,The loop prints only 3,Medium,B,Failure to update loop state,A -> misunderstands comparison syntax; C -> misunderstands print; D -> assumes the condition changes automatically.,"i remains 1 forever, so i <= 3 stays true and the loop never terminates."
+WHI_004,While loops,Variables & assignment; Boolean expressions; Conditionals,"What is printed? 
+
+n = 4 
+total = 0 
+while n > 0: 
+    if n % 2 == 0: 
+        total += n 
+    n -= 1 
+print(total)",4,6,10,Infinite loop,Medium,B,Tracing only one branch or missing the update,A -> counts only the first even value; C -> adds odd values too; D -> misses that n is decremented on every iteration.,"The even values encountered are 4 and 2, so total becomes 6."
+WHI_005,While loops,Variables & assignment; Boolean expressions,"What is printed? 
+
+x = 1 
+while x < 10: 
+    x *= 2 
+
+print(x)",8,10,16,1,Hard,C,Assuming the loop stops at the boundary value,A -> stops after the previous value; B -> assumes multiplication reaches exactly 10; D -> ignores the loop body.,"The values are 1, 2, 4, 8, then 16; 16 is the first value not less than 10."
+FOR_001,For loops & range,Variables & assignment,"What is printed? 
+
+for i in range(3): 
+    print(i)",1 2 3,0 1 2,0 1 2 3,1 2,Easy,B,Off-by-one / incorrect range interpretation,A -> assumes range starts at 1; C -> includes the stop value; D -> uses the wrong number of iterations.,"range(3) starts at 0 and stops before 3, so the loop prints 0, 1, and 2."
+FOR_002,For loops & range,Variables & assignment,"How many times does this loop execute? 
+
+for i in range(2, 8, 2): 
+    print(i)",2,3,4,5,Easy,C,Counting values instead of iterations,A -> counts only the start; B -> misses one value; D -> includes the excluded endpoint or wrong step.,"The values are 2, 4, 6, which gives three iterations."
+FOR_003,For loops & range,Strings; Variables & assignment,"What is printed? 
+
+for ch in 'cat': 
+    print(ch)",cat on one line,c a t on separate lines,0 1 2,Error because strings cannot be looped over,Medium,B,Treating a string as one indivisible value,A -> misses per-character iteration; C -> confuses a string with range indices; D -> misunderstands iterable strings.,"A for loop visits each character of the string in order, and print places each on a new line."
+FOR_004,For loops & range,Variables & assignment,"What is the final value of total? 
+total = 0 
+for i in range(1, 5): 
+    total += i",4,10,15,0,Medium,B,Incorrect range endpoint or accumulator update,A -> keeps only the last value; C -> includes 5; D -> ignores +=.,"range(1, 5) gives 1, 2, 3, and 4; their sum is 10."
+FOR_005,For loops & range,Strings; Variables & assignment,"What is printed? 
+
+word = 'python' 
+for i in range(1, len(word), 2): 
+    print(word[i], end='')",ptn,yhn,y h n,python,Hard,B,Confusing indices with characters or step behavior,A -> starts at index 0; C -> ignores end=''; D -> prints the whole string rather than selected indices.,"len(word) is 6 and the indices are 1, 3, and 5, selecting y, h, and n."
+CON_001,Conditionals,Boolean expressions,"What is printed? 
+
+x = 7 
+if x > 5: 
+    print('high') 
+else: 
+    print('low')",high,low,7,Nothing,Easy,A,Reversing a comparison result,B -> treats > as <; C -> prints the condition value instead of the branch output; D -> misses the true branch.,"7 > 5 is true, so the if branch prints high."
+CON_002,Conditionals,Boolean expressions,"Which branch runs? 
+
+score = 50 
+if score >= 50: 
+    result = 'pass' 
+else: 
+    result = 'fail'",The fail branch,The pass branch,Both branches,Neither branch,Easy,B,Misreading inclusive comparison,A -> treats >= as >; C -> assumes both branches execute; D -> misses that the condition is true.,"50 satisfies score >= 50, so the pass branch runs."
+CON_003,Conditionals,Boolean expressions; Expressions & operators,"What is printed?
+ 
+a = 3 
+b = 5 
+if a + 2 == b: 
+    print('equal') 
+else: 
+    print('different')",equal,different,TRUE,Error,Medium,A,Failing to evaluate the expression before comparison,B -> compares a and b directly; C -> prints the boolean instead of the selected text; D -> misunderstands a valid comparison.,"a + 2 evaluates to 5, so the condition 5 == b is true."
+CON_004,Conditionals,Boolean expressions,"What is printed? 
+
+temp = 30 
+if temp < 0: 
+    print('ice') 
+elif temp < 20: 
+    print('cool') 
+else: 
+    print('warm')",ice,cool,warm,ice cool warm,Medium,C,Evaluating all branches instead of the first matching branch,A -> uses the wrong comparison; B -> ignores the actual value; D -> assumes every branch executes.,"30 is not below 0 or 20, so the else branch prints warm."
+CON_005,Conditionals,Boolean expressions; Expressions & operators,"What is printed? 
+
+x = 4 
+if x % 2 == 0 and x > 5: 
+    print('A') 
+elif x % 2 == 0: 
+    print('B') 
+else: 
+    print('C')",A,B,C,Nothing,Hard,B,Ignoring short-circuit condition structure,A -> ignores x > 5; C -> treats the first false condition as final; D -> misses the elif branch.,"The first condition is false because 4 > 5 is false, but the elif condition is true because 4 is even."
+SCO_001,Scope,Functions (def/params/return),"What is printed? 
+
+x = 'global' 
+def show(): 
+    x = 'local' 
+    print(x) 
+
+show() 
+print(x)",local then local,global then global,local then global,NameError,Easy,C,Assuming assignment inside a function changes the global variable,A -> ignores local scope; B -> ignores the local assignment; D -> overlooks that both names are defined.,The x inside show is local; the x outside remains global.
+SCO_002,Scope,Functions (def/params/return),"What happens? 
+
+def f(): 
+    message = 'hi' 
+f() 
+print(message)",It prints hi,It prints None,NameError because message is local to f,SyntaxError,Easy,C,Assuming local variables survive after a function call,A -> treats local state as global; B -> confuses no return with a missing name; D -> misreads valid syntax.,"message exists only during f, so it is not defined where the final print runs."
+SCO_003,Scope,Functions (def/params/return); Variables & assignment,"What is printed? 
+
+count = 1 
+def increment(): 
+    global count 
+    count += 1 
+increment() 
+print(count)",1,2,None,NameError,Medium,B,Missing the effect of global declaration,A -> assumes the function creates a local count; C -> confuses mutation with return value; D -> overlooks the global binding.,global count makes += update the module-level variable from 1 to 2.
+SCO_004,Scope,Functions (def/params/return),"What is printed?
+ 
+value = 10 
+def outer(): 
+    value = 20 
+    def inner(): 
+        return value 
+    return inner() 
+print(outer())",10,20,None,NameError,Medium,B,Missing enclosing-function lookup (closure scope),A -> uses only the global scope; C -> assumes inner has no return; D -> misses that inner can access outer's value.,"inner finds value in the enclosing outer scope, so outer returns 20."
+SCO_005,Scope,Functions (def/params/return); Conditionals,"What happens? 
+
+x = 5 
+def check(): 
+    if x > 3: 
+        x = 10 
+    return x 
+print(check())",It prints 5,It prints 10,UnboundLocalError,NameError,Hard,C,Ignoring local binding analysis before the read,A -> assumes x is read globally; B -> assumes assignment occurs before the condition reads x; D -> uses the wrong error type.,"Because x is assigned anywhere in check, Python treats it as local; the earlier x > 3 read occurs before local x is assigned, causing UnboundLocalError."
+LIST_001,Lists,Variables & assignment,"What is the output of the following code?
+ 
+ nums = [10, 20, 30, 40]
+ print(nums[-1])",10,30,40,IndexError,Easy,C,Negative indexing misconception,A → -1 treated as the first element; B → negative index counted from 0 (off-by-one from the end); D → believes negative indices are invalid,"Negative indices count from the end of the list, so nums[-1] is the last element, 40."
+LIST_002,Lists,Variables & assignment,"What is the output of the following code?
+ 
+ a = 5
+ b = a
+ a = 8
+ print(b)",5,8,13,Error,Easy,A,Assignment treated as a live link between variables,B → b is believed to follow a after a is reassigned; C → values are believed to be added; D → believes a variable cannot be reassigned,"b = a copies the current value 5 into b. Reassigning a to 8 later does not change b, so the output is 5. This baseline matters before studying list aliasing, where assignment behaves differently."
+LIST_003,Lists,Variables & assignment,"What is the output of the following code?
+ 
+ data = [5, 3, 8, 1, 9, 2]
+ print(data[1:5:2])","[3, 8, 1, 9]","[3, 1]","[3, 1, 2]","[5, 8, 9]",Medium,B,Slicing misconception (start / stop / step),"A → step is ignored (every element from index 1 to 4); C → stop index is included (indices 1, 3, 5); D → start is ignored and the slice begins at index 0 (indices 0, 2, 4)","data[1:5:2] starts at index 1, stops before index 5 and moves 2 at a time: indices 1 and 3, so the result is [3, 1]."
+LIST_004,Lists,Variables & assignment,"What is the output of the following code?
+ 
+ a = [1, 2, 3]
+ b = a
+ c = a[:]
+ b.append(4)
+ c.append(5)
+ print(a, c)","[1, 2, 3] [1, 2, 3, 5]","[1, 2, 3, 4, 5] [1, 2, 3, 4, 5]","[1, 2, 3, 4] [1, 2, 3, 4, 5]","[1, 2, 3, 4] [1, 2, 3, 5]",Medium,D,Aliasing vs copying of lists,A → b = a is believed to create an independent copy (aliasing is missed); B → believes the slice a[:] also shares the same list as a; C → believes the slice is a live view that also receives later changes of a,"b = a makes b another name for the same list, so b.append(4) changes a too. c = a[:] creates a new list, so c is only affected by c.append(5). Result: a = [1, 2, 3, 4], c = [1, 2, 3, 5]."
+LIST_005,Lists,For loops & range,"What is the output of the following code?
+ 
+ nums = [1, 2, 3, 4]
+ for x in nums:
+  nums.remove(x)
+ print(nums)",[],"[2, 4]","[1, 2, 3, 4]",An error is raised because a list cannot be modified inside a for loop,Hard,B,Modifying a list while iterating (skipped elements),A → assumes the loop visits every original element even though the list shrinks; C → believes remove() has no effect during the loop (loop works on a copy); D → believes modifying a list during iteration is always an error,"The loop uses an internal index. At index 0, x = 1 is removed and the list becomes [2, 3, 4]. At index 1, x = 3 (the element 2 was skipped) is removed, giving [2, 4]. Index 2 is past the end, so the loop stops."
+TUP_001,Tuples & unpacking,Variables & assignment,"What is the output of the following code?
+ 
+ t = (1, 2, 3)
+ a, b, c = t
+ a = 10
+ print(t)","(10, 2, 3)",TypeError: tuples do not support item assignment,"(1, 2, 3)","[1, 2, 3]",Easy,C,Unpacking creates independent names / tuple immutability,A → believes the unpacked name a is a live reference into the tuple; B → believes a = 10 modifies the tuple and fails because tuples are immutable; D → believes unpacking converts the tuple into a list,"Unpacking copies the values 1, 2, 3 into the names a, b, c. a = 10 only rebinds the name a; the tuple t is unchanged and nothing fails, so t is still (1, 2, 3)."
+TUP_002,Tuples & unpacking,Variables & assignment,"What is the output of the following code?
+ 
+ a = 3
+ b = 7
+ temp = a
+ a = b
+ b = temp
+ print(a, b)",3 7,7 3,3 3,7 7,Easy,B,Variable assignment tracing (swap),A → believes the swap has no effect; C → reverses the direction of assignment (a = b treated as b = a); D → believes temp stays linked to a and therefore changes with it,"temp saves the original value of a (3). Then a becomes 7 and b becomes temp (3), so the output is 7 3. This is exactly the swap that a, b = b, a performs in one line."
+TUP_003,Tuples & unpacking,Variables & assignment,"What is the output of the following code?
+ 
+ point = (4, 9)
+ x, y = point
+ x, y = y, x + y
+ print(x, y)",9 18,4 9,13 9,9 13,Medium,D,Unpacking / simultaneous assignment tracing,"A → evaluates the right-hand side sequentially, using the new x in x + y; B → believes the second assignment is ignored; C → assigns the evaluated values in reverse order","x, y = point unpacks x = 4 and y = 9. In the second line the whole right-hand side (y, x + y) is evaluated first with the old values, giving (9, 13), and only then assigned: x = 9, y = 13."
+TUP_004,Tuples & unpacking,Lists; Variables & assignment,"What is the output of the following code?
+ 
+ pairs = [(1, 'a'), (2, 'b'), (3, 'c')]
+ x, y = pairs[1]
+ num, ch = pairs[-1]
+ print(x + num, y + ch)",5 bc,4 ac,3 ba,TypeError,Medium,A,Indexing a list of tuples + unpacking order,B → believes pairs[1] is the first tuple (1-based indexing); C → believes pairs[-1] is the first tuple; D → believes unpacking assigns values in reverse order (x would get the letter and y the number),"pairs[1] is (2, 'b'), so x = 2 and y = 'b'. pairs[-1] is (3, 'c'), so num = 3 and ch = 'c'. Then x + num = 5 and y + ch = 'bc'."
+TUP_005,Tuples & unpacking,Lists; Variables & assignment,"What is the output of the following code?
+ 
+ t = (1, [2, 3])
+ a, b = t
+ b.append(4)
+ print(t)","(1, [2, 3])",TypeError: a tuple cannot be modified,"(1, [2, 3, 4])","(1, [2, 3], 4)",Hard,C,Unpacking shares references to mutable objects,A → believes unpacking creates a copy of the list; B → believes immutability applies to objects stored inside the tuple; D → believes append is applied to the tuple itself,"Unpacking binds b to the same list object stored in t. The tuple cannot replace its elements, but that list is mutable: b.append(4) changes it in place, so t shows (1, [2, 3, 4])."
+DICT_001,Dictionaries,Lists,"What is the output of the following code?
+ 
+ ages = {'Ann': 21, 'Bob': 19}
+ print(ages[21])",KeyError,'Ann',21,None,Easy,A,Key vs value lookup,B → believes a dictionary can be searched by value; C → confuses key and value (returns the given number); D → believes a missing key returns None (confuses [] with .get()),"Dictionary lookup works with keys, not values. 21 is a value, not a key, so ages[21] raises a KeyError."
+DICT_002,Dictionaries,Lists,"What is the output of the following code?
+ 
+ fruits = ['apple', 'banana', 'cherry']
+ print('banana' in fruits, 'ban' in fruits)",True True,False False,False True,True False,Easy,D,Membership test with 'in',A → believes in matches partial strings inside list elements; B → believes in checks positions/indices instead of elements; C → believes in checks for absence instead of presence,"For a list, in checks whether an element is equal to the given value. 'banana' is an element, but 'ban' is not, so the output is True False. For dictionaries, in checks keys in the same way."
+DICT_003,Dictionaries,Variables & assignment,"What is the output of the following code?
+ 
+ inventory = {'apple': 3, 'pear': 5}
+ inventory['apple'] = 7
+ inventory['kiwi'] = 2
+ print(len(inventory), inventory['apple'])",4 7,3 7,3 3,KeyError,Medium,B,Updating vs inserting dictionary entries,A → believes assigning to an existing key creates a duplicate entry; C → believes assigning to an existing key does not change its value; D → believes a new key must be declared before it can be assigned,Assigning to an existing key replaces its value (apple becomes 7). Assigning to a new key adds an entry (kiwi). The dictionary has 3 entries and apple is 7.
+DICT_004,Dictionaries,Variables & assignment,"What is the output of the following code?
+ 
+ stock = {'a': 3}
+ stock['a'] = stock.get('a', 0) + 1
+ stock['b'] = stock.get('b', 0) + 1
+ print(stock['a'], stock['b'])",1 1,4 0,4 1,KeyError,Medium,C,Dictionary lookup with a default (dict.get),A → believes get ignores the stored value and always returns the default 0; B → off-by-one: believes the default 0 is stored without adding 1; D → believes get raises KeyError for a missing key (confuses it with []),"stock.get('a', 0) returns the stored value 3, so 'a' becomes 4. 'b' is missing, so get returns the default 0 and 'b' becomes 0 + 1 = 1. get never raises KeyError."
+DICT_005,Dictionaries,Lists; Variables & assignment,"What is the output of the following code?
+ 
+ a = {'x': [1]}
+ b = a.copy()
+ b['x'].append(2)
+ b['y'] = 3
+ print(a['x'], 'y' in a)",[1] False,"[1, 2] False","[1, 2] True",[1] True,Hard,B,Shallow copy of a dictionary holding a mutable value,"A → believes copy() also copies the nested list (deep copy); C → believes b = a.copy() is an alias, so the new key y also appears in a; D → believes the top-level entries are shared but the nested list is copied (reverse of a shallow copy)","a.copy() creates a new dictionary, but its values are shared (shallow copy). a['x'] and b['x'] are the same list, so append(2) is visible through a. b['y'] = 3 only adds a key to the new dictionary, so 'y' in a is False."
+REC_001,Recursion,"Functions (def, params, return); Conditionals","Which part of the function below is the base case?
+ 
+ def countdown(n):
+  if n == 0:
+  return 0
+  return countdown(n - 1)",return countdown(n - 1),def countdown(n):,The argument n - 1,The condition n == 0 together with return 0,Easy,D,Confusing base case and recursive case,A → confuses the recursive case with the base case; B → believes the function header defines where the recursion stops; C → confuses the step toward the base case (n - 1) with the base case itself,"The base case is the condition that ends the recursion without another recursive call: when n == 0 the function returns 0 immediately. return countdown(n - 1) is the recursive case, and n - 1 moves the argument toward the base case."
+REC_002,Recursion,"Functions (def, params, return)","What is the output of the following code?
+ 
+ def f(x):
+  print(x * 2)
+ 
+ y = f(3)
+ print(y)",6 6,6 None,None,Error,Easy,B,Confusing print with return,A → believes print inside a function is the same as returning a value; C → believes the print inside f does not run when its result is assigned; D → believes a function without return cannot be assigned to a variable,"f(3) prints 6 and returns None because it has no return statement, so y is None and print(y) prints None. Printing is not returning a value, which is essential for recursive functions."
+REC_003,Recursion,"Functions (def, params, return); Conditionals","What is the output of the following code?
+ 
+ def f(n):
+  if n <= 1:
+  return 1
+  return n * f(n - 1)
+ 
+ print(f(4))",24,10,12,6,Medium,A,Tracing recursive calls / combining return values,B → adds the values (4 + 3 + 2 + 1) instead of multiplying; C → stops after one level of recursion (4 * 3); D → drops the current n and returns only f(3),f(4) = 4 * f(3) = 4 * (3 * f(2)) = 4 * (3 * (2 * f(1))) = 4 * 3 * 2 * 1 = 24. The base case n <= 1 returns 1.
+REC_004,Recursion,"Functions (def, params, return); Scope; Conditionals","What is the output of the following code?
+ 
+ def show(n):
+  if n == 0:
+  return
+  label = n * 10
+  show(n - 1)
+  print(label)
+ 
+ show(3)",30 20 10,10 10 10,10 20 30,30,Medium,C,Local variable per call / order when the call stack unwinds,A → believes print runs before the recursive call returns (wrong execution order); B → believes label is one shared variable that keeps the last assigned value (each call has its own local label); D → believes only the outermost call prints,"Each call has its own local variable label (30, 20, 10 for n = 3, 2, 1). show(0) returns at once. Then each call prints its own label while the stack unwinds, starting with the deepest call: 10, 20, 30."
+REC_005,Recursion,"Functions (def, params, return); Conditionals","What happens when the following code runs?
+ 
+ def sum_to(n):
+  if n == 0:
+  return 0
+  return n + sum_to(n)
+ 
+ print(sum_to(3))",6,3,0,"RecursionError (maximum recursion depth exceeded), because the recursive call never gets closer to the base case",Hard,D,Recursive call that does not progress toward the base case,A → assumes the function works as intended (3 + 2 + 1) without noticing the argument never changes; B → believes the recursion stops after the first call; C → believes the base case is reached immediately,"Every call is sum_to(3) again, so n never reaches 0 and the base case is never executed. Python stops it with a RecursionError. Fix: return n + sum_to(n - 1)."

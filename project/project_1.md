@@ -74,12 +74,18 @@ Each question contains:
 - question_id
 - concept
 - prerequisite_concepts
+- question
+- option A
+- option B
+- option C
+- option D
 - difficulty
 - correct_answer
 - common_error_type
+- option_error_mapping
 - explanation
 
-See the full question bank:
+See the full question bank: https://docs.google.com/spreadsheets/d/1QeZse76DHPPyifIvc3B6-VDqI8c-I_2QwgYS_byWG6Y/edit?gid=0#gid=0
 
 ## 6. Student-state representation
 ## 7. Things we still don't know
