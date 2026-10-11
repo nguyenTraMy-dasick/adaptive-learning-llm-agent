@@ -1,10 +1,20 @@
-"""Shared data contracts for policy and engine integration."""
+"""HỢP ĐỒNG CHUNG — xem TEAM_TASKS.md trước khi thay đổi schema.
+
+Cả ba policy và engine phải dùng chung các kiểu dưới đây. Hãy giữ schema nhỏ,
+serializable, không đưa logic chọn policy/chấm điểm vào file này.
+TODO (thành viên phụ trách):
+- Chốt cách validate mastery trong khoảng [0, 1].
+- Chốt cách biểu diễn danh sách (tuple/list) khi parse JSON.
+- Giữ difficulty thống nhất với CSV: Easy, Medium, Hard.
+- Giữ prerequisite_concept đúng tên cột hiện tại, trừ khi có migration được duyệt.
+"""
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Mapping, Any
+from typing import Any, Mapping
 
 
 class ActionType(str, Enum):
+    """Các action chung mà policy được phép đề xuất."""
     ASK = "ASK"
     HINT = "HINT"
     EXPLAIN = "EXPLAIN"
@@ -14,6 +24,7 @@ class ActionType(str, Enum):
 
 @dataclass(frozen=True)
 class LearnerState:
+    """Snapshot learner state; policy không được mutate object này."""
     mastery: Mapping[str, float] = field(default_factory=dict)
     recent_errors: tuple[str, ...] = ()
     recent_actions: tuple[str, ...] = ()
@@ -22,6 +33,7 @@ class LearnerState:
 
 @dataclass(frozen=True)
 class Action:
+    """Action hợp lệ được engine tạo trước khi gọi policy."""
     action_type: ActionType
     concept: str | None = None
     difficulty: str | None = None
@@ -30,22 +42,16 @@ class Action:
 
 @dataclass(frozen=True)
 class PolicyDecision:
+    """Output thống nhất của cả ba policy; rationale chỉ phục vụ phân tích."""
     action_type: ActionType
     concept: str | None = None
     difficulty: str | None = None
     rationale: str = ""
 
-    @classmethod
-    def from_action(cls, action: Action) -> "PolicyDecision":
-        return cls(action.action_type, action.concept, action.difficulty, action.rationale)
-
-    def as_dict(self) -> dict[str, Any]:
-        return {"action_type": self.action_type.value, "concept": self.concept,
-                "difficulty": self.difficulty, "rationale": self.rationale}
-
 
 @dataclass(frozen=True)
 class TurnResult:
+    """Kết quả khái quát một lượt; chốt fields cuối cùng khi tích hợp."""
     decision: PolicyDecision
     valid: bool
     question_id: str | None = None

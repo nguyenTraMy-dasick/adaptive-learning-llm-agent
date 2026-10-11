@@ -1,29 +1,22 @@
-"""LLM adapter skeleton; model invocation is injected to avoid provider lock-in."""
-import json
-from typing import Callable, Any
+"""Thành viên 3: adapter cho LLM; model chỉ đề xuất action.
+
+TODO:
+- Inject model client/callable để dễ thay provider và mock khi đánh giá.
+- Gửi learner_state cùng danh sách available_actions đã serialize.
+- Yêu cầu output có cấu trúc theo PolicyDecision.
+- Parse output; engine vẫn là nơi kiểm tra cuối cùng action có hợp lệ không.
+- Không gửi đáp án đúng nếu không cần cho quyết định; tuyệt đối không yêu cầu
+  model chấm câu trả lời hoặc cập nhật learner mastery.
+"""
+from adaptive_learning.policies.base import BasePolicy
 from adaptive_learning.schemas import Action, LearnerState, PolicyDecision
-from .base import BasePolicy
+
 
 class LLMPolicy(BasePolicy):
-    def __init__(self, selector: Callable[[dict[str, Any]], Any]):
-        self.selector = selector
+    def __init__(self, model_client):
+        # TODO: lưu client/cấu hình cần thiết; không hard-code nhà cung cấp.
+        raise NotImplementedError
 
     def select_action(self, learner_state: LearnerState, available_actions: tuple[Action, ...]) -> PolicyDecision:
-        if not available_actions:
-            raise ValueError("available_actions must not be empty")
-        payload = {"learner_state": {"mastery": dict(learner_state.mastery),
-                   "recent_errors": list(learner_state.recent_errors),
-                   "recent_actions": list(learner_state.recent_actions),
-                   "attempted_question_ids": list(learner_state.attempted_question_ids)},
-                   "available_actions": [a.__dict__ for a in available_actions]}
-        proposed = self.selector(payload)
-        if isinstance(proposed, str):
-            proposed = json.loads(proposed)
-        if isinstance(proposed, int):
-            if not 0 <= proposed < len(available_actions):
-                raise ValueError("LLM selected an out-of-range action")
-            return PolicyDecision.from_action(available_actions[proposed])
-        decision = PolicyDecision(**proposed)
-        if not BasePolicy.validate(decision, available_actions):
-            raise ValueError("LLM selected an action outside available_actions")
-        return decision
+        # TODO: serialize -> gọi model -> parse thành PolicyDecision.
+        raise NotImplementedError
