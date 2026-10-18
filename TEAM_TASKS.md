@@ -75,10 +75,15 @@ Tài liệu này giúp ba thành viên làm song song mà vẫn ghép được. 
 3. Ba thành viên thống nhất API QuestionBank, executor và student model.
 4. Thành viên 3 ghép engine; cả nhóm chạy tests/integration và chốt các trường hợp biên.
 
-## Các quyết định còn mở cần ghi lại
+## Các quyết định đã chốt bởi Thành viên 1
 
-- `data/concept_graph.json` hiện rỗng; chọn graph trong `project/project_1.md` làm nguồn để điền hay chọn một nguồn chuẩn khác.
-- CSV hiện có cột `prerequisite_concept` dạng số ít; giữ tên này trong code trừ khi nhóm thống nhất migration.
-- CSV có `explanation` cho câu hỏi nhưng chưa có nguồn riêng cho hint/giải thích concept.
-- Chốt khi nào cho phép hỏi lại, hành vi khi hết câu phù hợp, và điều kiện `ADVANCE`.
-- `project_1.md` có một số concept dạng đầy đủ hơn tên trong CSV (ví dụ `Functions (def, params, return)` và `Functions`); phải chọn canonical concept ID/name trước khi kiểm tra graph.
+- [x] **Concept graph**: Đã chuẩn hóa và điền đầy đủ vào `data/concept_graph.json` dựa trên nguồn `project/project_1.md` và tổng hợp giáo trình (14 concepts, 21 edges, kiểm tra cấu trúc DAG không chu trình).
+- [x] **Canonical concept names**: Thống nhất dùng tên concept chuẩn theo CSV: `"Functions"` (với alias `"Functions (def, params, return)"` và `"Functions (def/params/return)"`), `"Data types"` (với alias `"Data type"`). `ConceptGraph.canonicalize()` tự động map alias về canonical name.
+- [x] **Cột prerequisite**: Giữ nguyên tên cột CSV `prerequisite_concept` (số ít). Trong schema `Question`, trường dữ liệu là `prerequisite_concept: str` và bổ sung property `prerequisites: tuple[str, ...]` để các thành viên 2 và 3 truy xuất dạng danh sách tiện lợi.
+- [x] **Ràng buộc mastery & difficulty**: Mastery bắt buộc là số thực trong khoảng `[0.0, 1.0]`. Difficulty chuẩn hóa theo 3 mức `{"Easy", "Medium", "Hard"}` qua `Difficulty(str, Enum)` và `ALLOWED_DIFFICULTIES`.
+- [x] **QuestionBank & Validation**: `QuestionBank` đã hoạt động tốt với toàn bộ 70 câu hỏi hiện tại của CSV; `scripts/validate_question_bank.py` cung cấp báo cáo chi tiết về tính toàn vẹn và hỗ trợ flag `--fix`. Đã có 15 unit tests chạy thành công tại `tests/test_question_bank.py`.
+
+## Các quyết định còn mở cần ghi lại (dành cho Thành viên 2 và 3)
+
+- CSV có `explanation` cho câu hỏi nhưng chưa có nguồn riêng cho hint/giải thích concept (Thành viên 2 đề xuất phương án).
+- Chốt khi nào cho phép hỏi lại, hành vi khi hết câu phù hợp, và điều kiện `ADVANCE` (Thành viên 2 và 3 chốt khi viết Executor và Policy).

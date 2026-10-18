@@ -1,0 +1,274 @@
+{
+  "name": "Python Introductory Concept Graph",
+  "version": "1.0.0",
+  "domain": "Introductory Python Programming",
+  "description": "Prerequisite concept graph for adaptive learning of introductory Python, synthesized from Python Tutorial, CS50P, and Py4E.",
+  "metadata": {
+    "total_concepts": 14,
+    "total_edges": 21,
+    "root_concept": "Variables & assignment"
+  },
+  "concepts": {
+    "Variables & assignment": {
+      "id": "VAR",
+      "name": "Variables & assignment",
+      "aliases": [
+        "Variables",
+        "Variable & assignment",
+        "Variables & assignment"
+      ],
+      "prerequisites": [],
+      "dependents": [
+        "Data types",
+        "Expressions & operators",
+        "While loops",
+        "For loops & range",
+        "Lists",
+        "Functions"
+      ],
+      "assessment_evidence": "Variable-state tracking / Code tracing",
+      "description": "Variables, assignment statements, reassignment, variable tracking, and multiple assignment."
+    },
+    "Data types": {
+      "id": "DT",
+      "name": "Data types",
+      "aliases": [
+        "Data types (int, float, str, bool)",
+        "Data type",
+        "Data Types"
+      ],
+      "prerequisites": [
+        "Variables & assignment"
+      ],
+      "dependents": [
+        "Expressions & operators",
+        "Strings"
+      ],
+      "assessment_evidence": "Type-of-result prediction / Type conversion identification",
+      "description": "Primitive types (int, float, str, bool), explicit type casting (int, float, str), and division return types."
+    },
+    "Expressions & operators": {
+      "id": "EXPR",
+      "name": "Expressions & operators",
+      "aliases": [
+        "Expressions",
+        "Expressions & arithmetic operators",
+        "Operators & expressions"
+      ],
+      "prerequisites": [
+        "Variables & assignment",
+        "Data types"
+      ],
+      "dependents": [
+        "Strings",
+        "Boolean expressions",
+        "Functions"
+      ],
+      "assessment_evidence": "Expression evaluation",
+      "description": "Arithmetic operators (+, -, *, /, //, %, **), operator precedence, associativity, and mixed-type expressions."
+    },
+    "Strings": {
+      "id": "STR",
+      "name": "Strings",
+      "aliases": [
+        "String operations",
+        "String"
+      ],
+      "prerequisites": [
+        "Data types",
+        "Expressions & operators"
+      ],
+      "dependents": [
+        "For loops & range"
+      ],
+      "assessment_evidence": "Index/slice evaluation / String transformation tracing",
+      "description": "String literals, concatenation, repetition, indexing, slicing with step, and immutability."
+    },
+    "Boolean expressions": {
+      "id": "BOOL",
+      "name": "Boolean expressions",
+      "aliases": [
+        "Boolean expressions / comparisons",
+        "Boolean logic"
+      ],
+      "prerequisites": [
+        "Expressions & operators"
+      ],
+      "dependents": [
+        "Conditionals",
+        "While loops"
+      ],
+      "assessment_evidence": "Boolean-expression evaluation",
+      "description": "Relational operators (==, !=, <, >, <=, >=), logical operators (and, or, not), short-circuit evaluation, and truthiness."
+    },
+    "Conditionals": {
+      "id": "COND",
+      "name": "Conditionals",
+      "aliases": [
+        "Conditional execution",
+        "Conditionals (if/elif/else)"
+      ],
+      "prerequisites": [
+        "Boolean expressions"
+      ],
+      "dependents": [
+        "Recursion"
+      ],
+      "assessment_evidence": "Branch tracing",
+      "description": "Control flow branching using if, elif, else statements and nested conditional evaluation."
+    },
+    "While loops": {
+      "id": "WHILE",
+      "name": "While loops",
+      "aliases": [
+        "While loops / indefinite iteration",
+        "While"
+      ],
+      "prerequisites": [
+        "Variables & assignment",
+        "Boolean expressions"
+      ],
+      "dependents": [],
+      "assessment_evidence": "Loop termination / infinite-loop detection",
+      "description": "Indefinite iteration using while loops, loop condition update, termination checking, and infinite-loop avoidance."
+    },
+    "For loops & range": {
+      "id": "FOR",
+      "name": "For loops & range",
+      "aliases": [
+        "For loops / definite loops",
+        "For loops",
+        "For"
+      ],
+      "prerequisites": [
+        "Variables & assignment",
+        "Strings"
+      ],
+      "dependents": [
+        "Lists"
+      ],
+      "assessment_evidence": "Loop tracing / off-by-one detection",
+      "description": "Definite iteration over sequences and range(start, stop, step) bounds evaluation."
+    },
+    "Lists": {
+      "id": "LIST",
+      "name": "Lists",
+      "aliases": [
+        "List operations",
+        "List"
+      ],
+      "prerequisites": [
+        "Variables & assignment",
+        "For loops & range"
+      ],
+      "dependents": [
+        "Dictionaries",
+        "Tuples & unpacking"
+      ],
+      "assessment_evidence": "Index/slice evaluation / Collection state tracking",
+      "description": "List creation, indexing, slicing, mutability, aliasing vs copying, and in-place list modification."
+    },
+    "Dictionaries": {
+      "id": "DICT",
+      "name": "Dictionaries",
+      "aliases": [
+        "Dictionary",
+        "Dict"
+      ],
+      "prerequisites": [
+        "Lists"
+      ],
+      "dependents": [],
+      "assessment_evidence": "Dictionary lookup tracing",
+      "description": "Key-value mapping, key lookup, membership testing with in, dictionary mutation, and get method with defaults."
+    },
+    "Tuples & unpacking": {
+      "id": "TUP",
+      "name": "Tuples & unpacking",
+      "aliases": [
+        "Tuples",
+        "Tuple unpacking"
+      ],
+      "prerequisites": [
+        "Lists"
+      ],
+      "dependents": [],
+      "assessment_evidence": "Unpacking syntax tracing",
+      "description": "Tuple immutability, sequence packing and unpacking, multiple assignment from tuples, and nested references."
+    },
+    "Functions": {
+      "id": "FUNC",
+      "name": "Functions",
+      "aliases": [
+        "Functions (def, params, return)",
+        "Functions (def/params/return)",
+        "Functions - def, parameters, return",
+        "Functions - calls / built-in functions"
+      ],
+      "prerequisites": [
+        "Variables & assignment",
+        "Expressions & operators"
+      ],
+      "dependents": [
+        "Scope",
+        "Recursion"
+      ],
+      "assessment_evidence": "Code tracing (call flow) / return vs print",
+      "description": "Function definition using def, formal parameters, arguments, return values versus print side effects, and default parameters."
+    },
+    "Scope": {
+      "id": "SCOPE",
+      "name": "Scope",
+      "aliases": [
+        "Variable scope",
+        "Local and global scope"
+      ],
+      "prerequisites": [
+        "Functions"
+      ],
+      "dependents": [
+        "Recursion"
+      ],
+      "assessment_evidence": "Scope tracing / NameError identification",
+      "description": "Local, global, and enclosing scope rules, variable lifetime, global keyword, and UnboundLocalError."
+    },
+    "Recursion": {
+      "id": "REC",
+      "name": "Recursion",
+      "aliases": [
+        "Recursive functions"
+      ],
+      "prerequisites": [
+        "Conditionals",
+        "Functions",
+        "Scope"
+      ],
+      "dependents": [],
+      "assessment_evidence": "Recursive tracing / base-case identification",
+      "description": "Recursive calls, base case vs recursive step, call stack tracing, and recursion depth termination."
+    }
+  },
+  "edges": [
+    { "source": "Variables & assignment", "target": "Data types" },
+    { "source": "Variables & assignment", "target": "Expressions & operators" },
+    { "source": "Data types", "target": "Expressions & operators" },
+    { "source": "Data types", "target": "Strings" },
+    { "source": "Expressions & operators", "target": "Strings" },
+    { "source": "Expressions & operators", "target": "Boolean expressions" },
+    { "source": "Boolean expressions", "target": "Conditionals" },
+    { "source": "Boolean expressions", "target": "While loops" },
+    { "source": "Variables & assignment", "target": "While loops" },
+    { "source": "Variables & assignment", "target": "For loops & range" },
+    { "source": "Strings", "target": "For loops & range" },
+    { "source": "For loops & range", "target": "Lists" },
+    { "source": "Variables & assignment", "target": "Lists" },
+    { "source": "Lists", "target": "Dictionaries" },
+    { "source": "Lists", "target": "Tuples & unpacking" },
+    { "source": "Variables & assignment", "target": "Functions" },
+    { "source": "Expressions & operators", "target": "Functions" },
+    { "source": "Functions", "target": "Scope" },
+    { "source": "Functions", "target": "Recursion" },
+    { "source": "Scope", "target": "Recursion" },
+    { "source": "Conditionals", "target": "Recursion" }
+  ]
+}
