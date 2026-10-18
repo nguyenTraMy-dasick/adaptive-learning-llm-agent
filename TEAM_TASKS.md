@@ -81,9 +81,15 @@ Tài liệu này giúp ba thành viên làm song song mà vẫn ghép được. 
 - [x] **Canonical concept names**: Thống nhất dùng tên concept chuẩn theo CSV: `"Functions"` (với alias `"Functions (def, params, return)"` và `"Functions (def/params/return)"`), `"Data types"` (với alias `"Data type"`). `ConceptGraph.canonicalize()` tự động map alias về canonical name.
 - [x] **Cột prerequisite**: Giữ nguyên tên cột CSV `prerequisite_concept` (số ít). Trong schema `Question`, trường dữ liệu là `prerequisite_concept: str` và bổ sung property `prerequisites: tuple[str, ...]` để các thành viên 2 và 3 truy xuất dạng danh sách tiện lợi.
 - [x] **Ràng buộc mastery & difficulty**: Mastery bắt buộc là số thực trong khoảng `[0.0, 1.0]`. Difficulty chuẩn hóa theo 3 mức `{"Easy", "Medium", "Hard"}` qua `Difficulty(str, Enum)` và `ALLOWED_DIFFICULTIES`.
-- [x] **QuestionBank & Validation**: `QuestionBank` đã hoạt động tốt với toàn bộ 70 câu hỏi hiện tại của CSV; `scripts/validate_question_bank.py` cung cấp báo cáo chi tiết về tính toàn vẹn và hỗ trợ flag `--fix`. Đã có 15 unit tests chạy thành công tại `tests/test_question_bank.py`.
+- [x] **QuestionBank & Validation**: `QuestionBank` đã hoạt động tốt với toàn bộ 70 câu hỏi hiện tại của CSV; `scripts/validate_question_bank.py` cung cấp báo cáo chi tiết về tính toàn vẹn và hỗ trợ flag `--fix`. Đã có 30 unit tests chạy thành công tại `tests/test_question_bank.py`.
+- [x] **Rà soát dữ liệu question bank (18/10)**: Đã chạy thật code của cả 70 câu và sửa: đáp án sai (FOR_002), code thụt lề hỏng (REC_001/003/004/005), option trùng (STR_005), typo (CON_003, EXP_004), prerequisite mâu thuẫn graph (VAR_002–005, TYP_005, WHI_004, SCO_005), 4 câu đặt sai concept được viết lại (LIST_002, TUP_002, DICT_002, REC_002), mapping lỗi không khớp option (VAR_004, EXP_001, EXP_004, STR_003, FUN_005). Chi tiết ở `TEAM_MEMBER_1.md` mục 2.6.
+- [x] **Ràng buộc prerequisite câu hỏi ↔ graph**: Mọi prerequisite của câu hỏi phải là tổ tiên của concept trong `concept_graph.json` (không trỏ vào chính nó). `QuestionBank` chuẩn hóa prerequisite về canonical name ngay khi load, nên `q.prerequisites` dùng trực tiếp làm key cho `mastery` được. Validator báo lỗi nếu vi phạm.
+- [x] **`LearnerState.mastery` chỉ đọc**: Sửa trực tiếp `state.mastery[...] = ...` sẽ báo `TypeError`; muốn cập nhật thì tạo `LearnerState` mới. Mastery phải là số thực hữu hạn trong `[0.0, 1.0]` (không nhận `bool`, `NaN`, `inf`).
 
 ## Các quyết định còn mở cần ghi lại (dành cho Thành viên 2 và 3)
 
 - CSV có `explanation` cho câu hỏi nhưng chưa có nguồn riêng cho hint/giải thích concept (Thành viên 2 đề xuất phương án).
 - Chốt khi nào cho phép hỏi lại, hành vi khi hết câu phù hợp, và điều kiện `ADVANCE` (Thành viên 2 và 3 chốt khi viết Executor và Policy).
+- Chốt định dạng phần tử của `recent_actions` / `recent_errors` (hiện là chuỗi tự do). Rule-based và LLM policy cần biết câu vừa làm thuộc concept nào và đúng hay sai, nên Thành viên 2 (người ghi) và Thành viên 3 (người đọc) cần thống nhất trước khi implement sâu, ví dụ `"ASK:LIST_003:Lists:wrong"` hoặc thêm một trường có cấu trúc vào `LearnerState`.
+- Concept chưa có trong `mastery` được hiểu là mastery 0.0 hay "chưa biết"?
+- Phân bố đáp án đúng đang lệch (A 9, B 30, C 25, D 6). Cần quyết định: trộn thứ tự option khi hiển thị (Thành viên 2, executor) hay cân lại thứ tự ngay trong CSV.

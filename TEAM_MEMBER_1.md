@@ -29,7 +29,8 @@ Hợp đồng dữ liệu đã được hoàn thiện với các ràng buộc ng
 
 1. **Ràng buộc Mastery `[0.0, 1.0]`**:
    - `LearnerState` kiểm tra từng concept trong trường `mastery`.
-   - Bắt buộc là số thực (`float` hoặc `int`). Nếu nằm ngoài đoạn `[0.0, 1.0]`, chương trình sẽ ngay lập tức raise `ValueError`. Nếu sai kiểu dữ liệu sẽ raise `TypeError`.
+   - Bắt buộc là số thực hữu hạn (`float` hoặc `int`, không nhận `bool`). Nếu nằm ngoài đoạn `[0.0, 1.0]` hoặc là `NaN`/`inf`, chương trình sẽ ngay lập tức raise `ValueError`. Nếu sai kiểu dữ liệu sẽ raise `TypeError`.
+   - `mastery` được lưu dưới dạng `FrozenMastery` (dict chỉ đọc): `state.mastery["Lists"] = 0.9` sẽ raise `TypeError`. Muốn cập nhật thì tạo `LearnerState` mới (xem ví dụ ở mục 3). Vẫn so sánh, `json.dumps`, `copy.deepcopy`, `pickle` bình thường.
 2. **Xử lý danh sách trong State**:
    - Các trường `recent_errors`, `recent_actions`, `attempted_question_ids` trong `LearnerState` được tự động chuyển đổi thành `tuple[str, ...]` (immutable).
    - Cung cấp phương thức `to_dict()` (chuyển tuple thành list để serialize JSON) và `from_dict()` (deserialization từ JSON).
@@ -43,7 +44,7 @@ Hợp đồng dữ liệu đã được hoàn thiện với các ràng buộc ng
    - Khớp chính xác 13 cột của `data/question_bank.csv`.
    - **Quyết định về prerequisite**: Giữ nguyên tên trường `prerequisite_concept: str` (dạng số ít khớp với header CSV) để tránh phá vỡ tương thích.
    - Bổ sung property tiện ích:
-     - `q.prerequisites`: Tự động parse chuỗi ngăn cách bằng `;` thành `tuple[str, ...]`, loại bỏ giá trị `'None'`.
+     - `q.prerequisites`: Tự động parse chuỗi ngăn cách bằng `;` thành `tuple[str, ...]`, loại bỏ giá trị `'None'`. Khi đọc qua `QuestionBank`, các tên này đã được chuẩn hóa về canonical name của graph (ví dụ `"Functions (def, params, return)"` → `"Functions"`), nên dùng trực tiếp làm key tra `mastery` được.
      - `q.options`: Trả về dictionary `{"A": ..., "B": ..., "C": ..., "D": ...}`.
 
 ---
@@ -82,13 +83,15 @@ Cung cấp hai lớp xử lý chính:
 
 #### B. Lớp `QuestionBank`
 - Đọc file cố định `data/question_bank.csv` (70 câu hỏi, mỗi concept có đúng 5 câu gồm 2 Easy, 2 Medium, 1 Hard).
-- **Làm sạch dữ liệu tự động**: Tự động loại bỏ ký tự khoảng trắng thừa và ký tự tab (như `\tA`, `\tC` có trong CSV gốc) để đảm bảo không bị lỗi runtime.
+- **Làm sạch dữ liệu tự động**: Tự động loại bỏ ký tự khoảng trắng thừa và ký tự tab trong `correct_answer` (phòng trường hợp dán dữ liệu từ Google Sheets) để đảm bảo không bị lỗi runtime.
+- **Chuẩn hóa prerequisite khi load**: `prerequisite_concept` của mỗi câu được map về canonical name qua `ConceptGraph.canonicalize()`.
+- **Báo lỗi dữ liệu rõ ràng**: `question_id` trùng lặp → `ValueError`; concept không có trong graph → log cảnh báo; không đọc được graph → log cảnh báo (thay vì im lặng).
 - **Tạo chỉ mục tra cứu**: Lập index theo `question_id`, `concept`, `difficulty`, và bộ đôi `(concept, difficulty)` giúp việc tra cứu đạt độ phức tạp $O(1)$.
 - **Các hàm API phục vụ Thành viên 2 và 3**:
   - `get_question(question_id) -> Question | None`: Lấy chi tiết câu hỏi theo ID.
   - `get_questions(concept=None, difficulty=None, exclude_ids=None) -> list[Question]`: Lọc câu hỏi theo concept (hỗ trợ cả alias), theo độ khó và tự động loại bỏ các câu hỏi đã làm (`exclude_ids`).
   - `get_available_questions(concept=None, difficulty=None, attempted_ids=None)`: Hàm tiện ích bọc cho `get_questions`.
-  - `get_next_question(concept, difficulty, exclude_ids, strategy="first" | "random")`: Lấy câu hỏi tiếp theo chưa làm.
+  - `get_next_question(concept, difficulty, exclude_ids, strategy="first" | "random", rng=None)`: Lấy câu hỏi tiếp theo chưa làm. Với `strategy="random"`, truyền `rng=random.Random(seed)` để thí nghiệm tái lập được.
   - `concept_summary() -> dict`: Thống kê tổng số câu hỏi theo từng độ khó cho từng concept.
 
 ---
@@ -103,7 +106,9 @@ Script này chạy kiểm tra tự động trước khi chạy thực nghiệm:
   - Kiểm tra `concept` và `prerequisite_concept` phải thuộc danh sách concept hoặc alias hợp lệ.
   - Kiểm tra `difficulty` $\in$ `{Easy, Medium, Hard}`.
   - Kiểm tra `correct_answer` $\in$ `{A, B, C, D}`.
-  - Kiểm tra không để trống câu hỏi, 4 phương án và phần giải thích.
+  - Kiểm tra không để trống câu hỏi, 4 phương án và phần giải thích; 4 phương án không được trùng nhau.
+  - Kiểm tra prerequisite của câu hỏi là tổ tiên của concept trong graph và không trỏ vào chính concept đó.
+  - Compile đoạn code trong câu hỏi (phần sau dòng đầu) để bắt lỗi thụt lề/cú pháp.
 - **Báo cáo trực quan**: Bảng phân bố câu hỏi Easy/Medium/Hard/Total cho 14 concept.
 - **Cờ tính năng**:
   - `--strict`: Coi warning như lỗi (trả về exit code 1 nếu có warning).
@@ -113,7 +118,7 @@ Script này chạy kiểm tra tự động trước khi chạy thực nghiệm:
 
 ### 2.5. Kiểm thử Đơn vị (`tests/test_question_bank.py`)
 
-Toàn bộ logic đã được kiểm thử với 15 test cases, bao gồm:
+Toàn bộ logic đã được kiểm thử với 30 test cases. 15 test ban đầu gồm:
 1. `test_learner_state_valid`: Kiểm tra tạo state hợp lệ.
 2. `test_learner_state_mastery_bounds`: Kiểm tra chặn mastery $< 0.0$, $> 1.0$ hoặc sai type.
 3. `test_learner_state_serialization`: Kiểm tra tính toàn vẹn khi serialize và deserialize sang JSON dictionary.
@@ -129,6 +134,30 @@ Toàn bộ logic đã được kiểm thử với 15 test cases, bao gồm:
 13. `test_filter_by_concept_and_difficulty`: Kiểm tra lọc theo concept và difficulty.
 14. `test_exclude_attempted_questions`: Kiểm tra cơ chế loại trừ câu hỏi đã làm.
 15. `test_get_next_question`: Kiểm tra lấy câu hỏi tiếp theo chưa làm.
+
+15 test bổ sung trong đợt rà soát:
+- `TestLearnerStateImmutability` (4 test): mastery chỉ đọc, cập nhật bằng state mới, chặn `NaN`/`inf`/`bool`, copy/pickle/hash.
+- `TestQuestionBankDataIntegrity` (5 test): prerequisite là canonical name và là tổ tiên trong graph, 4 option khác nhau, code trong mọi câu compile được, chọn ngẫu nhiên tái lập được với seed.
+- `TestValidatorDetectsDataErrors` (5 test): validator bắt được option trùng, prerequisite tự trỏ, prerequisite không phải tổ tiên, code thụt lề hỏng.
+- `TestQuestionBankLoadErrors` (1 test): `question_id` trùng lặp bị báo lỗi.
+
+### 2.6. Rà soát và sửa dữ liệu `data/question_bank.csv` (18/10)
+
+Chạy thật đoạn code của cả 70 câu và đối chiếu output với đáp án. Các sửa đổi:
+
+| Nhóm lỗi | Câu | Sửa |
+| :--- | :--- | :--- |
+| Sai đáp án | FOR_002 | `range(2, 8, 2)` lặp 3 lần → đáp án B; đổi option D thành 6 cho khớp mapping |
+| Code không chạy (thụt lề) | REC_001, REC_003, REC_004, REC_005 | Sửa thụt lề; chuẩn hóa thụt lề 4 khoảng trắng cho LIST/TUP/DICT |
+| Option trùng | STR_005 | Excel ẩn dấu `'` đầu ô → đổi `repr(slice1)` thành `len(slice1)` |
+| Typo | CON_003, EXP_004 | `TRUE` → `True`; `Data type` → `Data types` |
+| Prerequisite mâu thuẫn graph | VAR_002–VAR_005, TYP_005, WHI_004, SCO_005 | Sửa prerequisite; WHI_004 và SCO_005 viết lại code bỏ `if` |
+| Câu đặt sai concept | LIST_002, TUP_002, DICT_002, REC_002 | Viết lại để thật sự kiểm tra Lists / Tuples / Dictionaries / Recursion |
+| Mapping không khớp option | VAR_004, EXP_001, EXP_004, STR_003, FUN_005 | Đổi distractor hoặc mapping cho khớp lỗi mô tả |
+| Đáp án có hai cách hiểu | SCO_005 | `UnboundLocalError` là lớp con của `NameError` → bỏ option NameError |
+| Option đúng dài bất thường | SCO_002, REC_001, REC_005 | Rút gọn option đúng |
+| Kiến thức | TYP_001 | `//` là floor (làm tròn về −∞), không phải truncation |
+| Định dạng | VAR_004, TYP_004 | Xóa tab trong `correct_answer`; prerequisite dùng canonical name |
 
 ---
 
@@ -197,13 +226,13 @@ is_valid = any(
    ```bash
    python -m unittest tests/test_question_bank.py
    ```
-   *Kết quả kỳ vọng:* `Ran 15 tests ... OK`
+   *Kết quả kỳ vọng:* `Ran 30 tests ... OK`
 
 2. **Chạy script kiểm tra Question Bank và Concept Graph:**
    ```bash
    python scripts/validate_question_bank.py
    ```
-   *Kết quả kỳ vọng:* Báo cáo bảng 14 concepts với 70 câu hỏi và kết luận `HỢP ĐỒNG DỮ LIỆU ĐẠT CHUẨN (PASSED)`.
+   *Kết quả kỳ vọng:* Báo cáo bảng 14 concepts với 70 câu hỏi và kết luận `HỢP ĐỒNG DỮ LIỆU ĐẠT CHUẨN (PASSED)`. Chạy thêm `--strict` cũng phải PASSED (không còn cảnh báo).
 
 3. **Chạy tự động chuẩn hóa dữ liệu CSV (nếu muốn làm sạch khoảng trắng):**
    ```bash
@@ -242,4 +271,4 @@ Dưới đây là danh sách đối chiếu toàn bộ các đầu việc đã h
 
 - [x] **7. Bộ unit tests kiểm chứng hệ thống**
   - *Trạng thái:* Đã xong
-  - *Ghi chú:* Hoàn thành `test_question_bank.py` với 15/15 tests PASS.
+  - *Ghi chú:* Hoàn thành `test_question_bank.py` với 30/30 tests PASS.

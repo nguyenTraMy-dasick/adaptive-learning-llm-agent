@@ -3,7 +3,9 @@
 Cả ba policy và engine phải dùng chung các kiểu dưới đây. Giữ schema nhỏ,
 serializable, không đưa logic chọn policy/chấm điểm vào file này.
 Đã chốt:
-- Validate mastery trong đoạn [0.0, 1.0].
+- Validate mastery trong đoạn [0.0, 1.0] (số thực hữu hạn; không nhận bool, NaN, inf).
+- `LearnerState.mastery` là mapping chỉ đọc (FrozenMastery); muốn cập nhật thì tạo
+  LearnerState mới, ví dụ `LearnerState(mastery={**state.mastery, concept: 0.6}, ...)`.
 - Biểu diễn danh sách trong state dưới dạng immutable tuple khi chạy, serialize thành list khi ra JSON.
 - Difficulty thống nhất với CSV: Easy, Medium, Hard (Difficulty enum và ALLOWED_DIFFICULTIES).
 - Prerequisite concept giữ nguyên tên cột CSV `prerequisite_concept` (số ít),
@@ -11,6 +13,7 @@ serializable, không đưa logic chọn policy/chấm điểm vào file này.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Mapping
@@ -35,17 +38,48 @@ class ActionType(str, Enum):
     ADVANCE = "ADVANCE"
 
 
+class FrozenMastery(dict):
+    """dict chỉ đọc dùng cho LearnerState.mastery.
+
+    Vẫn là dict (so sánh, json.dumps, dict(...) đều dùng được) nhưng mọi thao tác
+    sửa đều báo TypeError, để policy không thể vô tình sửa state dùng chung.
+    """
+
+    def _readonly(self, *args: Any, **kwargs: Any) -> None:
+        raise TypeError(
+            "LearnerState.mastery is read-only; create a new LearnerState to update mastery."
+        )
+
+    __setitem__ = _readonly
+    __delitem__ = _readonly
+    __ior__ = _readonly
+    clear = _readonly
+    pop = _readonly
+    popitem = _readonly
+    setdefault = _readonly
+    update = _readonly
+
+    def __hash__(self) -> int:  # type: ignore[override]
+        return hash(frozenset(self.items()))
+
+    def __reduce__(self) -> tuple[Any, ...]:
+        # Cho phép copy/deepcopy/pickle mà không đi qua __setitem__.
+        return (FrozenMastery, (dict(self),))
+
+
 def _validate_mastery(mastery: Mapping[str, float]) -> dict[str, float]:
     """Kiểm tra và chuẩn hóa giá trị mastery trong khoảng [0.0, 1.0]."""
     cleaned: dict[str, float] = {}
     for concept, score in mastery.items():
         if not isinstance(concept, str):
             raise TypeError(f"Concept key must be str, got {type(concept).__name__}: {concept!r}")
-        if not isinstance(score, (int, float)):
+        if isinstance(score, bool) or not isinstance(score, (int, float)):
             raise TypeError(
                 f"Mastery score for '{concept}' must be float or int, got {type(score).__name__}: {score!r}"
             )
         score_f = float(score)
+        if not math.isfinite(score_f):
+            raise ValueError(f"Mastery score for '{concept}' must be a finite number, got {score_f}")
         if score_f < 0.0 or score_f > 1.0:
             raise ValueError(f"Mastery score for '{concept}' must be in [0.0, 1.0], got {score_f}")
         cleaned[concept] = score_f
@@ -90,7 +124,7 @@ class LearnerState:
     attempted_question_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        cleaned_mastery = _validate_mastery(self.mastery)
+        cleaned_mastery = FrozenMastery(_validate_mastery(self.mastery))
         object.__setattr__(self, "mastery", cleaned_mastery)
         object.__setattr__(self, "recent_errors", tuple(str(x) for x in self.recent_errors))
         object.__setattr__(self, "recent_actions", tuple(str(x) for x in self.recent_actions))

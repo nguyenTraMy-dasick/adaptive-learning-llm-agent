@@ -10,9 +10,12 @@ Kiểm tra:
    - question_id duy nhất, không rỗng
    - concept thuộc đồ thị concept
    - prerequisite_concept khớp với concept graph hoặc alias được công nhận
+   - prerequisite_concept là tổ tiên (trực tiếp/gián tiếp) của concept trong graph,
+     không được trỏ vào chính concept của câu hỏi
    - difficulty nằm trong {Easy, Medium, Hard}
    - correct_answer nằm trong {A, B, C, D} (không dính ký tự trắng/tab như \\tA)
-   - 4 phương án option_A, B, C, D không rỗng
+   - 4 phương án option_A, B, C, D không rỗng và không trùng nhau
+   - đoạn code trong câu hỏi (phần sau dòng đầu tiên) compile được
    - common_error_type, option_error_mapping, explanation đầy đủ
 4. Độ phủ (coverage) câu hỏi cho từng concept và mức độ khó.
 """
@@ -22,6 +25,7 @@ import argparse
 import csv
 import json
 import sys
+import textwrap
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -170,8 +174,9 @@ def validate_question_bank_csv(
                 for a in c_info.get("aliases", []):
                     if a and isinstance(a, str):
                         alias_map[a.strip().lower()] = c_name
+    ancestors = build_ancestor_map(graph_data)
 
-    with open(csv_path, mode="r", encoding="utf-8") as f:
+    with open(csv_path, mode="r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         fieldnames = reader.fieldnames or []
 
@@ -239,6 +244,23 @@ def validate_question_bank_csv(
                                 f"Line {line_no} ({clean_qid}): Prerequisite concept '{item}' not found in concept graph."
                             )
 
+                # Prerequisite của câu hỏi phải nhất quán với prerequisite graph
+                canon_concept = alias_map.get(clean_concept.lower()) if concept_nodes else None
+                if canon_concept:
+                    for item in items:
+                        canon_p = alias_map.get(item.lower())
+                        if canon_p is None:
+                            continue  # đã báo lỗi "not found" ở trên
+                        if canon_p == canon_concept:
+                            report.add_error(
+                                f"Line {line_no} ({clean_qid}): Prerequisite '{item}' is the question's own concept."
+                            )
+                        elif canon_p not in ancestors.get(canon_concept, set()):
+                            report.add_error(
+                                f"Line {line_no} ({clean_qid}): Prerequisite '{canon_p}' is not an ancestor of "
+                                f"'{canon_concept}' in the concept graph (add the edge to the graph or fix the question)."
+                            )
+
             # Kiểm tra difficulty
             raw_diff = raw_row.get("difficulty", "")
             clean_diff = raw_diff.strip()
@@ -266,10 +288,26 @@ def validate_question_bank_csv(
             if not q_text:
                 report.add_error(f"Line {line_no} ({clean_qid}): 'question' text is empty.")
 
+            option_values: dict[str, str] = {}
             for opt_key in ["option_A", "option_B", "option_C", "option_D"]:
                 opt_val = raw_row.get(opt_key, "").strip()
                 if not opt_val:
                     report.add_error(f"Line {line_no} ({clean_qid}): Empty {opt_key}.")
+                else:
+                    option_values[opt_key] = opt_val
+            seen_options: dict[str, str] = {}
+            for opt_key, opt_val in option_values.items():
+                if opt_val in seen_options:
+                    report.add_error(
+                        f"Line {line_no} ({clean_qid}): {opt_key} duplicates {seen_options[opt_val]} ({opt_val!r})."
+                    )
+                else:
+                    seen_options[opt_val] = opt_key
+
+            # Đoạn code trong câu hỏi phải là Python hợp lệ (bắt lỗi thụt lề, lỗi gõ)
+            code_error = check_question_code(q_text)
+            if code_error:
+                report.add_error(f"Line {line_no} ({clean_qid}): Code in question does not compile: {code_error}")
 
             # Kiểm tra metadata giải thích
             explanation = raw_row.get("explanation", "").strip()
@@ -282,6 +320,47 @@ def validate_question_bank_csv(
 
     report.stats["total_questions"] = len(rows)
     return rows
+
+
+def build_ancestor_map(graph_data: dict[str, Any] | None) -> dict[str, set[str]]:
+    """Tính tập tổ tiên (tiên quyết trực tiếp + gián tiếp) cho mỗi concept từ graph JSON."""
+    if not graph_data:
+        return {}
+    concepts = graph_data.get("concepts", {}) or {}
+    parents: dict[str, set[str]] = defaultdict(set)
+    for c_name, c_info in concepts.items():
+        if isinstance(c_info, dict):
+            parents[c_name].update(p for p in c_info.get("prerequisites", []) if p in concepts)
+    for edge in graph_data.get("edges", []) or []:
+        src, tgt = edge.get("source"), edge.get("target")
+        if src in concepts and tgt in concepts:
+            parents[tgt].add(src)
+
+    result: dict[str, set[str]] = {}
+    for c_name in concepts:
+        seen: set[str] = set()
+        stack = list(parents[c_name])
+        while stack:
+            p = stack.pop()
+            if p not in seen:
+                seen.add(p)
+                stack.extend(parents[p])
+        result[c_name] = seen
+    return result
+
+
+def check_question_code(question_text: str) -> str | None:
+    """Compile phần code sau dòng đầu tiên của câu hỏi; trả về thông báo lỗi hoặc None."""
+    if "\n" not in question_text:
+        return None
+    code = textwrap.dedent(question_text.split("\n", 1)[1]).strip("\n")
+    if not code.strip():
+        return None
+    try:
+        compile(code, "<question>", "exec")
+    except SyntaxError as exc:
+        return f"{exc.msg} (code line {exc.lineno})"
+    return None
 
 
 def check_coverage(rows: list[dict[str, str]], graph_data: dict[str, Any] | None, report: ValidationReport) -> None:
@@ -372,7 +451,7 @@ def fix_question_bank_csv(csv_path: Path, graph_data: dict[str, Any] | None) -> 
                     if a and isinstance(a, str):
                         alias_map[a.strip().lower()] = c_name
 
-    with open(csv_path, mode="r", encoding="utf-8") as f:
+    with open(csv_path, mode="r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         fieldnames = reader.fieldnames or EXPECTED_CSV_COLUMNS
         rows = list(reader)
@@ -420,7 +499,7 @@ def fix_question_bank_csv(csv_path: Path, graph_data: dict[str, Any] | None) -> 
 
     if fixed_count > 0:
         with open(csv_path, mode="w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\r\n")
             writer.writeheader()
             writer.writerows(rows)
         print(f"[AUTO-FIX] Đã chuẩn hóa {fixed_count} điểm dữ liệu trong {csv_path}.")

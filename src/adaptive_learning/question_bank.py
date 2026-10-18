@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import json
 import logging
+import random
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
@@ -231,7 +232,11 @@ class QuestionBank:
         elif DEFAULT_GRAPH_PATH.exists():
             try:
                 self.concept_graph = ConceptGraph.from_file(DEFAULT_GRAPH_PATH)
-            except Exception:
+            except Exception as exc:  # graph hỏng thì vẫn đọc được CSV nhưng phải báo rõ
+                logger.warning(
+                    "Không đọc được concept graph %s (%s); concept/prerequisite sẽ không được chuẩn hóa.",
+                    DEFAULT_GRAPH_PATH, exc,
+                )
                 self.concept_graph = None
         else:
             self.concept_graph = None
@@ -244,6 +249,15 @@ class QuestionBank:
         if auto_load:
             self.load()
 
+    def _canonical(self, name: str) -> str:
+        return self.concept_graph.canonicalize(name) if self.concept_graph else name.strip()
+
+    def _canonical_prerequisites(self, raw: str) -> str:
+        """Chuẩn hóa chuỗi prerequisite ('A; B') về canonical name; 'None' nếu rỗng."""
+        items = [p.strip() for p in (raw or "").split(";")]
+        items = [self._canonical(p) for p in items if p and p.lower() not in {"none", "null"}]
+        return "; ".join(items) if items else "None"
+
     def load(self) -> None:
         """Đọc toàn bộ câu hỏi từ CSV vào bộ nhớ và xây dựng chỉ mục tra cứu."""
         if not self.csv_path.exists():
@@ -254,7 +268,8 @@ class QuestionBank:
         self._by_concept_difficulty.clear()
         self._by_difficulty.clear()
 
-        with open(self.csv_path, mode="r", encoding="utf-8") as f:
+        # newline="" là bắt buộc với csv khi ô có xuống dòng (code nhiều dòng trong câu hỏi).
+        with open(self.csv_path, mode="r", encoding="utf-8", newline="") as f:
             reader = csv.DictReader(f)
             if not reader.fieldnames:
                 raise ValueError(f"CSV file at {self.csv_path} is empty or has no header.")
@@ -264,10 +279,14 @@ class QuestionBank:
                 if not qid:
                     logger.warning("Bỏ qua hàng %d vì thiếu question_id", line_no)
                     continue
+                if qid in self._questions:
+                    raise ValueError(f"Hàng {line_no}: question_id trùng lặp {qid!r}.")
 
                 raw_concept = row.get("concept", "").strip()
                 # Chuẩn hóa tên concept qua concept_graph nếu có
-                concept = self.concept_graph.canonicalize(raw_concept) if self.concept_graph else raw_concept
+                concept = self._canonical(raw_concept)
+                if self.concept_graph and not self.concept_graph.has_concept(concept):
+                    logger.warning("Hàng %d (%s): concept %r không có trong concept graph.", line_no, qid, concept)
 
                 # Làm sạch giá trị correct_answer và difficulty
                 correct_ans = row.get("correct_answer", "").strip().upper()
@@ -278,7 +297,7 @@ class QuestionBank:
                 question = Question(
                     question_id=qid,
                     concept=concept,
-                    prerequisite_concept=row.get("prerequisite_concept", "None").strip(),
+                    prerequisite_concept=self._canonical_prerequisites(row.get("prerequisite_concept", "None")),
                     question=row.get("question", "").strip(),
                     option_A=row.get("option_A", "").strip(),
                     option_B=row.get("option_B", "").strip(),
@@ -379,17 +398,21 @@ class QuestionBank:
         difficulty: str | Difficulty | None = None,
         exclude_ids: Iterable[str] | None = None,
         strategy: str = "first",
+        rng: random.Random | None = None,
     ) -> Question | None:
         """Lấy câu hỏi tiếp theo theo chiến lược ('first' hoặc 'random').
 
+        Với strategy='random', truyền `rng=random.Random(seed)` để thí nghiệm tái lập được;
+        nếu không truyền sẽ dùng một Random không seed.
         Trả về None nếu không còn câu hỏi nào phù hợp chưa làm.
         """
+        if strategy not in {"first", "random"}:
+            raise ValueError(f"Unknown strategy {strategy!r}; expected 'first' or 'random'.")
         candidates = self.get_questions(concept=concept, difficulty=difficulty, exclude_ids=exclude_ids)
         if not candidates:
             return None
         if strategy == "random":
-            import random
-            return random.choice(candidates)
+            return (rng or random.Random()).choice(candidates)
         return candidates[0]
 
     def count(self, concept: str | None = None, difficulty: str | Difficulty | None = None) -> int:
