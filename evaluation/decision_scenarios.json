@@ -1,0 +1,575 @@
+{
+  "version": 1,
+  "description": "Simulated learner states for Phase 5 decision evaluation. expert_labels are left empty on purpose: annotate them independently (see evaluation/decision_rubric.md) before reporting agreement.",
+  "recent_actions_format": "provisional: '<ACTION> <concept> <difficulty> -> correct|wrong (<question_id>)' until Member 2 fixes the format",
+  "scenarios": [
+    {
+      "id": "S01",
+      "description": "Phiên vừa bắt đầu, chưa có dữ liệu nào về learner.",
+      "learner_state": {
+        "mastery": {},
+        "recent_errors": [],
+        "recent_actions": [],
+        "attempted_question_ids": []
+      },
+      "context": {
+        "focus_concept": null,
+        "introduced_concepts": [],
+        "last_action": null,
+        "last_question_id": null,
+        "last_question_concept": null,
+        "last_correct": null,
+        "step": 0
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S02",
+      "description": "Vừa chuyển sang Functions, chưa làm câu nào; các tiên quyết đã khá vững.",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.92,
+          "Data types": 0.88,
+          "Expressions & operators": 0.86
+        },
+        "recent_errors": [],
+        "recent_actions": [
+          "ASK Variables & assignment Medium -> correct (VAR_003)",
+          "ASK Data types Easy -> correct (TYP_001)",
+          "ASK Data types Medium -> correct (TYP_003)",
+          "ASK Expressions & operators Easy -> correct (EXP_001)",
+          "ASK Expressions & operators Medium -> correct (EXP_003)"
+        ],
+        "attempted_question_ids": [
+          "VAR_001",
+          "VAR_003",
+          "TYP_001",
+          "TYP_003",
+          "EXP_001",
+          "EXP_003"
+        ]
+      },
+      "context": {
+        "focus_concept": "Functions",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Functions"
+        ],
+        "last_action": {
+          "action_type": "ADVANCE",
+          "concept": "Functions",
+          "difficulty": null,
+          "rationale": ""
+        },
+        "last_question_id": "EXP_003",
+        "last_question_concept": "Expressions & operators",
+        "last_correct": true,
+        "step": 6
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S03",
+      "description": "Recursion yếu, vừa sai câu Medium; tiên quyết Functions cũng còn yếu.",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.9,
+          "Data types": 0.85,
+          "Expressions & operators": 0.8,
+          "Boolean expressions": 0.86,
+          "Conditionals": 0.9,
+          "Functions": 0.45,
+          "Scope": 0.8,
+          "Recursion": 0.25
+        },
+        "recent_errors": [
+          "FUN_003: Confusing print with return",
+          "REC_003: Tracing recursive calls / combining return values"
+        ],
+        "recent_actions": [
+          "ASK Functions Medium -> wrong (FUN_003)",
+          "ASK Scope Easy -> correct (SCO_001)",
+          "ASK Scope Medium -> correct (SCO_003)",
+          "ASK Recursion Easy -> correct (REC_001)",
+          "ASK Recursion Medium -> wrong (REC_003)"
+        ],
+        "attempted_question_ids": [
+          "FUN_001",
+          "FUN_003",
+          "SCO_001",
+          "SCO_003",
+          "REC_001",
+          "REC_003"
+        ]
+      },
+      "context": {
+        "focus_concept": "Recursion",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Boolean expressions",
+          "Conditionals",
+          "Functions",
+          "Scope",
+          "Recursion"
+        ],
+        "last_action": {
+          "action_type": "ASK",
+          "concept": "Recursion",
+          "difficulty": "Medium",
+          "rationale": ""
+        },
+        "last_question_id": "REC_003",
+        "last_question_concept": "Recursion",
+        "last_correct": false,
+        "step": 6
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S04",
+      "description": "Lists yếu, vừa sai câu Easy; các tiên quyết (Variables, For loops) đều vững.",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.92,
+          "Data types": 0.85,
+          "Expressions & operators": 0.85,
+          "Strings": 0.86,
+          "For loops & range": 0.88,
+          "Lists": 0.3
+        },
+        "recent_errors": [
+          "LIST_001: Negative indexing misconception"
+        ],
+        "recent_actions": [
+          "ASK For loops & range Easy -> correct (FOR_001)",
+          "ASK For loops & range Medium -> correct (FOR_003)",
+          "ASK For loops & range Medium -> correct (FOR_004)",
+          "ASK Lists Easy -> wrong (LIST_001)"
+        ],
+        "attempted_question_ids": [
+          "FOR_001",
+          "FOR_003",
+          "FOR_004",
+          "LIST_001"
+        ]
+      },
+      "context": {
+        "focus_concept": "Lists",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Strings",
+          "For loops & range",
+          "Lists"
+        ],
+        "last_action": {
+          "action_type": "ASK",
+          "concept": "Lists",
+          "difficulty": "Easy",
+          "rationale": ""
+        },
+        "last_question_id": "LIST_001",
+        "last_question_concept": "Lists",
+        "last_correct": false,
+        "step": 4
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S05",
+      "description": "Strings ở mức trung bình, vừa sai câu Medium về slicing.",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.9,
+          "Data types": 0.88,
+          "Expressions & operators": 0.84,
+          "Strings": 0.55
+        },
+        "recent_errors": [
+          "STR_003: Slicing bounds and step evaluation misconception"
+        ],
+        "recent_actions": [
+          "ASK Strings Easy -> correct (STR_001)",
+          "ASK Strings Easy -> correct (STR_002)",
+          "ASK Strings Medium -> wrong (STR_003)"
+        ],
+        "attempted_question_ids": [
+          "STR_001",
+          "STR_002",
+          "STR_003"
+        ]
+      },
+      "context": {
+        "focus_concept": "Strings",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Strings"
+        ],
+        "last_action": {
+          "action_type": "ASK",
+          "concept": "Strings",
+          "difficulty": "Medium",
+          "rationale": ""
+        },
+        "last_question_id": "STR_003",
+        "last_question_concept": "Strings",
+        "last_correct": false,
+        "step": 3
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S06",
+      "description": "Conditionals khá vững, vừa đúng câu Medium.",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.9,
+          "Data types": 0.86,
+          "Expressions & operators": 0.85,
+          "Boolean expressions": 0.87,
+          "Conditionals": 0.78
+        },
+        "recent_errors": [],
+        "recent_actions": [
+          "ASK Conditionals Easy -> correct (CON_001)",
+          "ASK Conditionals Easy -> correct (CON_002)",
+          "ASK Conditionals Medium -> correct (CON_003)"
+        ],
+        "attempted_question_ids": [
+          "CON_001",
+          "CON_002",
+          "CON_003"
+        ]
+      },
+      "context": {
+        "focus_concept": "Conditionals",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Boolean expressions",
+          "Conditionals"
+        ],
+        "last_action": {
+          "action_type": "ASK",
+          "concept": "Conditionals",
+          "difficulty": "Medium",
+          "rationale": ""
+        },
+        "last_question_id": "CON_003",
+        "last_question_concept": "Conditionals",
+        "last_correct": true,
+        "step": 3
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S07",
+      "description": "Boolean expressions đã thành thạo, vừa đúng câu Hard.",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.9,
+          "Data types": 0.86,
+          "Expressions & operators": 0.85,
+          "Boolean expressions": 0.9
+        },
+        "recent_errors": [],
+        "recent_actions": [
+          "ASK Boolean expressions Easy -> correct (BOOL_001)",
+          "ASK Boolean expressions Medium -> correct (BOOL_003)",
+          "ASK Boolean expressions Hard -> correct (BOOL_005)"
+        ],
+        "attempted_question_ids": [
+          "BOOL_001",
+          "BOOL_003",
+          "BOOL_005"
+        ]
+      },
+      "context": {
+        "focus_concept": "Boolean expressions",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Boolean expressions"
+        ],
+        "last_action": {
+          "action_type": "ASK",
+          "concept": "Boolean expressions",
+          "difficulty": "Hard",
+          "rationale": ""
+        },
+        "last_question_id": "BOOL_005",
+        "last_question_concept": "Boolean expressions",
+        "last_correct": true,
+        "step": 3
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S08",
+      "description": "Scope trung bình khá nhưng sai lặp lại cùng một kiểu lỗi (local vs global).",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.9,
+          "Data types": 0.86,
+          "Expressions & operators": 0.85,
+          "Functions": 0.82,
+          "Scope": 0.62
+        },
+        "recent_errors": [
+          "SCO_001: Assuming assignment inside a function changes the global variable",
+          "SCO_003: Missing the effect of global declaration"
+        ],
+        "recent_actions": [
+          "ASK Scope Easy -> wrong (SCO_001)",
+          "ASK Scope Easy -> correct (SCO_002)",
+          "ASK Scope Medium -> wrong (SCO_003)"
+        ],
+        "attempted_question_ids": [
+          "SCO_001",
+          "SCO_002",
+          "SCO_003"
+        ]
+      },
+      "context": {
+        "focus_concept": "Scope",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Functions",
+          "Scope"
+        ],
+        "last_action": {
+          "action_type": "ASK",
+          "concept": "Scope",
+          "difficulty": "Medium",
+          "rationale": ""
+        },
+        "last_question_id": "SCO_003",
+        "last_question_concept": "Scope",
+        "last_correct": false,
+        "step": 3
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S09",
+      "description": "Đã làm hết 5 câu While loops, mastery mới ở mức trung bình.",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.9,
+          "Data types": 0.86,
+          "Expressions & operators": 0.85,
+          "Boolean expressions": 0.86,
+          "While loops": 0.6
+        },
+        "recent_errors": [
+          "WHI_002: Checking the body before the update",
+          "WHI_005: Assuming the loop stops at the boundary value"
+        ],
+        "recent_actions": [
+          "ASK While loops Easy -> correct (WHI_001)",
+          "ASK While loops Easy -> wrong (WHI_002)",
+          "ASK While loops Medium -> correct (WHI_003)",
+          "ASK While loops Medium -> correct (WHI_004)",
+          "ASK While loops Hard -> wrong (WHI_005)"
+        ],
+        "attempted_question_ids": [
+          "WHI_001",
+          "WHI_002",
+          "WHI_003",
+          "WHI_004",
+          "WHI_005"
+        ]
+      },
+      "context": {
+        "focus_concept": "While loops",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Boolean expressions",
+          "While loops"
+        ],
+        "last_action": {
+          "action_type": "ASK",
+          "concept": "While loops",
+          "difficulty": "Hard",
+          "rationale": ""
+        },
+        "last_question_id": "WHI_005",
+        "last_question_concept": "While loops",
+        "last_correct": false,
+        "step": 5
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S10",
+      "description": "Dictionaries yếu; bước trước vừa EXPLAIN Dictionaries sau khi sai câu Easy.",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.92,
+          "Data types": 0.85,
+          "Expressions & operators": 0.85,
+          "Strings": 0.86,
+          "For loops & range": 0.86,
+          "Lists": 0.86,
+          "Dictionaries": 0.3
+        },
+        "recent_errors": [
+          "DICT_001: Key vs value lookup"
+        ],
+        "recent_actions": [
+          "ASK Lists Easy -> correct (LIST_001)",
+          "ASK Lists Medium -> correct (LIST_003)",
+          "ASK Lists Medium -> correct (LIST_004)",
+          "ASK Dictionaries Easy -> wrong (DICT_001)",
+          "EXPLAIN Dictionaries"
+        ],
+        "attempted_question_ids": [
+          "LIST_001",
+          "LIST_003",
+          "LIST_004",
+          "DICT_001"
+        ]
+      },
+      "context": {
+        "focus_concept": "Dictionaries",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Strings",
+          "For loops & range",
+          "Lists",
+          "Dictionaries"
+        ],
+        "last_action": {
+          "action_type": "EXPLAIN",
+          "concept": "Dictionaries",
+          "difficulty": null,
+          "rationale": ""
+        },
+        "last_question_id": "DICT_001",
+        "last_question_concept": "Dictionaries",
+        "last_correct": false,
+        "step": 5
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S11",
+      "description": "For loops mới ở mức trung bình nhưng vừa đúng 2 câu liên tiếp.",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.9,
+          "Data types": 0.86,
+          "Expressions & operators": 0.85,
+          "Strings": 0.85,
+          "For loops & range": 0.5
+        },
+        "recent_errors": [
+          "FOR_001: Off-by-one / incorrect range interpretation"
+        ],
+        "recent_actions": [
+          "ASK For loops & range Easy -> wrong (FOR_001)",
+          "ASK For loops & range Easy -> correct (FOR_002)",
+          "ASK For loops & range Medium -> correct (FOR_003)"
+        ],
+        "attempted_question_ids": [
+          "FOR_001",
+          "FOR_002",
+          "FOR_003"
+        ]
+      },
+      "context": {
+        "focus_concept": "For loops & range",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Strings",
+          "For loops & range"
+        ],
+        "last_action": {
+          "action_type": "ASK",
+          "concept": "For loops & range",
+          "difficulty": "Medium",
+          "rationale": ""
+        },
+        "last_question_id": "FOR_003",
+        "last_question_concept": "For loops & range",
+        "last_correct": true,
+        "step": 3
+      },
+      "expert_labels": []
+    },
+    {
+      "id": "S12",
+      "description": "Đang ôn Functions (vì Recursion yếu); Functions nay đã vững.",
+      "learner_state": {
+        "mastery": {
+          "Variables & assignment": 0.9,
+          "Data types": 0.86,
+          "Expressions & operators": 0.85,
+          "Boolean expressions": 0.86,
+          "Conditionals": 0.88,
+          "Functions": 0.88,
+          "Scope": 0.82,
+          "Recursion": 0.3
+        },
+        "recent_errors": [
+          "REC_003: Tracing recursive calls / combining return values"
+        ],
+        "recent_actions": [
+          "ASK Recursion Easy -> correct (REC_001)",
+          "ASK Recursion Medium -> wrong (REC_003)",
+          "ASK Functions Easy -> correct (FUN_002)",
+          "ASK Functions Medium -> correct (FUN_004)",
+          "ASK Functions Hard -> correct (FUN_005)"
+        ],
+        "attempted_question_ids": [
+          "REC_001",
+          "REC_003",
+          "FUN_002",
+          "FUN_004",
+          "FUN_005"
+        ]
+      },
+      "context": {
+        "focus_concept": "Functions",
+        "introduced_concepts": [
+          "Variables & assignment",
+          "Data types",
+          "Expressions & operators",
+          "Boolean expressions",
+          "Conditionals",
+          "Functions",
+          "Scope",
+          "Recursion"
+        ],
+        "last_action": {
+          "action_type": "ASK",
+          "concept": "Functions",
+          "difficulty": "Hard",
+          "rationale": ""
+        },
+        "last_question_id": "FUN_005",
+        "last_question_concept": "Functions",
+        "last_correct": true,
+        "step": 5
+      },
+      "expert_labels": []
+    }
+  ]
+}

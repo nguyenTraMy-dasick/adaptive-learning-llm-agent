@@ -56,6 +56,7 @@ Tài liệu này giúp ba thành viên làm song song mà vẫn ghép được. 
 - `src/adaptive_learning/engine.py`
 - `evaluation/`
 - `tests/test_random_model.py`, `tests/test_rule_based_policy.py`, `tests/test_llm_policy.py`, `tests/test_engine.py`
+- File thêm mới: `src/adaptive_learning/action_space.py`, `src/adaptive_learning/policies/llm_clients.py`, `evaluation/decision_scenarios.json`, `tests/test_action_space.py`, `tests/test_decision_evaluation.py`, `tests/_helpers.py`
 
 **Việc cần làm:**
 1. Ba policy có cùng `select_action(learner_state, available_actions)` và cùng kiểu trả về.
@@ -86,10 +87,24 @@ Tài liệu này giúp ba thành viên làm song song mà vẫn ghép được. 
 - [x] **Ràng buộc prerequisite câu hỏi ↔ graph**: Mọi prerequisite của câu hỏi phải là tổ tiên của concept trong `concept_graph.json` (không trỏ vào chính nó). `QuestionBank` chuẩn hóa prerequisite về canonical name ngay khi load, nên `q.prerequisites` dùng trực tiếp làm key cho `mastery` được. Validator báo lỗi nếu vi phạm.
 - [x] **`LearnerState.mastery` chỉ đọc**: Sửa trực tiếp `state.mastery[...] = ...` sẽ báo `TypeError`; muốn cập nhật thì tạo `LearnerState` mới. Mastery phải là số thực hữu hạn trong `[0.0, 1.0]` (không nhận `bool`, `NaN`, `inf`).
 
+## Trạng thái Thành viên 3 (phần không phụ thuộc Thành viên 2)
+
+- [x] **Interface policy**: `select_action(learner_state, available_actions, context=None)`. Tham số `context: DecisionContext` (focus concept, các concept đã giới thiệu, action trước, câu hỏi gần nhất và đúng/sai, số bước) do engine theo dõi và truyền giống nhau cho cả ba policy. Nhờ vậy policy không phải đọc chuỗi tự do trong `recent_actions`. `BasePolicy.validate()` so khớp `(action_type, concept, difficulty)` và bỏ qua rationale.
+- [x] **Action space** (`action_space.py`): ASK(focus, độ khó còn câu), HINT(focus, khi đã hỏi ít nhất một câu của focus), EXPLAIN(focus), REVIEW_PREREQUISITE(tiên quyết trực tiếp của focus), ADVANCE(concept chưa phải focus, không phải tổ tiên của focus, có mọi tiên quyết đã giới thiệu và còn câu hỏi). Đầu phiên chỉ có ADVANCE tới concept gốc. Không chặn theo ngưỡng mastery, để còn đo được lỗi "advance quá sớm".
+- [x] **RandomPolicy**: chọn đều trên available_actions, có seed và `reset()`.
+- [x] **RuleBasedPolicy**: luật R0–R6 ghi trong docstring; ngưỡng ở `RuleConfig` (0.40 / 0.75 / 0.85, tiên quyết yếu < 0.60); rationale ghi luật đã dùng.
+- [x] **LLMPolicy**: prompt chứa graph, mastery, context, lỗi/action gần đây và danh sách action đánh số. Không gửi câu hỏi, đáp án hay ngưỡng của rule-based. LLM trả JSON `{"action_index", "rationale"}`; output sai thì hỏi lại (`max_retries`), sau đó dùng `fallback_policy` hoặc raise `LLMDecisionError`. Toàn bộ prompt và output thô được lưu ở `last_trace`. Client `OpenAICompatibleClient` chỉ dùng thư viện chuẩn, cấu hình qua `.env` (xem `.env.example`).
+- [x] **Engine**: validate → thực thi qua executor → cập nhật context → ghi log JSONL. Quyết định không hợp lệ hoặc policy lỗi thì không thực thi, state giữ nguyên, ghi `TurnResult(valid=False)`. `run_session` dừng khi đạt mục tiêu, hết action, hết bước hoặc gặp nhiều lượt invalid liên tiếp.
+- [x] **Đánh giá Phase 5**: `evaluation/run_decision_evaluation.py`, `metrics.py`, `decision_rubric.md`, 12 scenario mẫu. `expert_labels` để trống có chủ đích, cần gán nhãn độc lập.
+- [ ] **Phase 6** (`run_learning_experiment.py`): chờ StudentModel/Executor và learner mô phỏng.
+
+**Đề xuất cần Thành viên 2 xác nhận:** interface `ActionExecutor` trong `engine.py`:
+`execute(decision, learner_state, respond) -> TurnResult`. Executor nhận quyết định đã được validate. Với ASK: chọn câu, gọi `respond(question)` để lấy đáp án, chấm, cập nhật student model. Trả về `TurnResult` có `question_id`/`question`, `correct`, `feedback` và `updated_state` (LearnerState mới). Engine dùng `question_id`/`correct` để cập nhật context. `tests/test_engine.py::FakeExecutor` là ví dụ chạy được.
+
 ## Các quyết định còn mở cần ghi lại (dành cho Thành viên 2 và 3)
 
 - CSV có `explanation` cho câu hỏi nhưng chưa có nguồn riêng cho hint/giải thích concept (Thành viên 2 đề xuất phương án).
 - Chốt khi nào cho phép hỏi lại, hành vi khi hết câu phù hợp, và điều kiện `ADVANCE` (Thành viên 2 và 3 chốt khi viết Executor và Policy).
 - Chốt định dạng phần tử của `recent_actions` / `recent_errors` (hiện là chuỗi tự do). Rule-based và LLM policy cần biết câu vừa làm thuộc concept nào và đúng hay sai, nên Thành viên 2 (người ghi) và Thành viên 3 (người đọc) cần thống nhất trước khi implement sâu, ví dụ `"ASK:LIST_003:Lists:wrong"` hoặc thêm một trường có cấu trúc vào `LearnerState`.
-- Concept chưa có trong `mastery` được hiểu là mastery 0.0 hay "chưa biết"?
+- Concept chưa có trong `mastery` được hiểu là mastery 0.0 hay "chưa biết"? Hiện tại rule-based dùng `RuleConfig.unknown_mastery = 0.0`, còn prompt LLM ghi là "not assessed". Nếu Thành viên 2 khởi tạo mastery cho mọi concept (ví dụ prior của BKT) thì không còn khác biệt.
 - Phân bố đáp án đúng đang lệch (A 9, B 30, C 25, D 6). Cần quyết định: trộn thứ tự option khi hiển thị (Thành viên 2, executor) hay cân lại thứ tự ngay trong CSV.
