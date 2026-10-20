@@ -11,6 +11,7 @@ from pathlib import Path
 
 from _helpers import V, question_bank
 
+from adaptive_learning.action_executor import ActionExecutor as RealExecutor
 from adaptive_learning.engine import ActionExecutor, LearningEngine
 from adaptive_learning.policies import BasePolicy, DecisionContext, RandomPolicy, RuleBasedPolicy
 from adaptive_learning.schemas import ActionType, LearnerState, PolicyDecision, TurnResult
@@ -160,6 +161,79 @@ class TestLearningEngine(unittest.TestCase):
         engine = LearningEngine(RuleBasedPolicy(concept_graph=self.qb.concept_graph), self.qb, LazyExecutor(self.qb))
         state = LearnerState()
         self.assertIs(engine.run_turn(state).updated_state, state)
+
+
+class TestEngineStopsAndExecutorRejections(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.qb = question_bank()
+
+    def test_executor_rejection_keeps_state_and_context(self):
+        class RejectingExecutor:
+            def execute(self, decision, learner_state, respond=None):
+                return TurnResult(decision=decision, valid=False, updated_state=None, error="no question")
+
+        engine = LearningEngine(RuleBasedPolicy(concept_graph=self.qb.concept_graph), self.qb, RejectingExecutor())
+        state = LearnerState()
+        result = engine.run_turn(state)
+        self.assertFalse(result.valid)
+        self.assertIs(result.updated_state, state)
+        self.assertEqual(engine.context, DecisionContext())
+
+    def test_stalled_session_stops(self):
+        explain = PolicyDecision(ActionType.EXPLAIN, concept="Functions")
+        engine = LearningEngine(FixedPolicy(explain), self.qb, FakeExecutor(self.qb))
+        engine.reset(DecisionContext(focus_concept="Functions", introduced_concepts=(V, "Functions")))
+        session = engine.run_session(LearnerState(), max_steps=50, max_turns_without_question=4)
+        self.assertEqual(session.stop_reason, "stalled")
+        self.assertEqual(len(session.logs), 4)
+
+    def test_questions_exhausted_stops(self):
+        all_ids = tuple(q.question_id for q in self.qb.get_all_questions())
+        engine = LearningEngine(RandomPolicy(seed=0), self.qb, FakeExecutor(self.qb))
+        session = engine.run_session(LearnerState(attempted_question_ids=all_ids))
+        self.assertEqual(session.stop_reason, "questions_exhausted")
+        self.assertEqual(session.logs, ())
+
+    def test_on_turn_callback_sees_every_turn(self):
+        seen = []
+        engine = LearningEngine(RuleBasedPolicy(concept_graph=self.qb.concept_graph), self.qb, FakeExecutor(self.qb))
+        engine.run_session(LearnerState(), respond=lambda q: q.correct_answer, max_steps=6, on_turn=seen.append)
+        self.assertEqual(len(seen), 6)
+
+
+class TestIntegrationWithRealExecutor(unittest.TestCase):
+    """Engine + ActionExecutor/StudentModel thật của Thành viên 2."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.qb = question_bank()
+
+    def test_rule_based_with_always_correct_learner_reaches_goal(self):
+        engine = LearningEngine(RuleBasedPolicy(concept_graph=self.qb.concept_graph), self.qb, RealExecutor(self.qb))
+        session = engine.run_session(LearnerState(), respond=lambda q: q.correct_answer, max_steps=200)
+        self.assertEqual(session.stop_reason, "goal_reached")
+        self.assertTrue(all(log.result.valid for log in session.logs))
+
+    def test_rule_based_no_review_advance_ping_pong(self):
+        import random
+        rng = random.Random(0)
+        engine = LearningEngine(RuleBasedPolicy(concept_graph=self.qb.concept_graph), self.qb, RealExecutor(self.qb))
+        session = engine.run_session(
+            LearnerState(), respond=lambda q: q.correct_answer if rng.random() < 0.6 else "Z", max_steps=400
+        )
+        self.assertIn(session.stop_reason, {"goal_reached", "questions_exhausted"})
+        # Không có chuỗi dài lượt không hỏi câu nào
+        streak = longest = 0
+        for log in session.logs:
+            streak = 0 if log.result.question_id else streak + 1
+            longest = max(longest, streak)
+        self.assertLessEqual(longest, 4)
+
+    def test_every_policy_turn_valid_with_real_executor(self):
+        engine = LearningEngine(RandomPolicy(seed=5), self.qb, RealExecutor(self.qb))
+        session = engine.run_session(LearnerState(), respond=lambda q: "A", max_steps=150)
+        self.assertTrue(all(log.result.valid for log in session.logs))
 
 
 if __name__ == "__main__":

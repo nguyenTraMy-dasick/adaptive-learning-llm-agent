@@ -1,7 +1,7 @@
 {
   "version": 1,
   "description": "Simulated learner states for Phase 5 decision evaluation. expert_labels are left empty on purpose: annotate them independently (see evaluation/decision_rubric.md) before reporting agreement.",
-  "recent_actions_format": "provisional: '<ACTION> <concept> <difficulty> -> correct|wrong (<question_id>)' until Member 2 fixes the format",
+  "recent_actions_format": "same as StudentModel (Member 2): 'ASK:<question_id>:<concept>:correct|wrong' or '<ACTION>:<concept>'; recent_errors hold common_error_type",
   "scenarios": [
     {
       "id": "S01",
@@ -34,11 +34,11 @@
         },
         "recent_errors": [],
         "recent_actions": [
-          "ASK Variables & assignment Medium -> correct (VAR_003)",
-          "ASK Data types Easy -> correct (TYP_001)",
-          "ASK Data types Medium -> correct (TYP_003)",
-          "ASK Expressions & operators Easy -> correct (EXP_001)",
-          "ASK Expressions & operators Medium -> correct (EXP_003)"
+          "ASK:VAR_003:Variables & assignment:correct",
+          "ASK:TYP_001:Data types:correct",
+          "ASK:TYP_003:Data types:correct",
+          "ASK:EXP_001:Expressions & operators:correct",
+          "ASK:EXP_003:Expressions & operators:correct"
         ],
         "attempted_question_ids": [
           "VAR_001",
@@ -85,15 +85,15 @@
           "Recursion": 0.25
         },
         "recent_errors": [
-          "FUN_003: Confusing print with return",
-          "REC_003: Tracing recursive calls / combining return values"
+          "Confusing print with return",
+          "Tracing recursive calls / combining return values"
         ],
         "recent_actions": [
-          "ASK Functions Medium -> wrong (FUN_003)",
-          "ASK Scope Easy -> correct (SCO_001)",
-          "ASK Scope Medium -> correct (SCO_003)",
-          "ASK Recursion Easy -> correct (REC_001)",
-          "ASK Recursion Medium -> wrong (REC_003)"
+          "ASK:FUN_003:Functions:wrong",
+          "ASK:SCO_001:Scope:correct",
+          "ASK:SCO_003:Scope:correct",
+          "ASK:REC_001:Recursion:correct",
+          "ASK:REC_003:Recursion:wrong"
         ],
         "attempted_question_ids": [
           "FUN_001",
@@ -142,13 +142,13 @@
           "Lists": 0.3
         },
         "recent_errors": [
-          "LIST_001: Negative indexing misconception"
+          "Negative indexing misconception"
         ],
         "recent_actions": [
-          "ASK For loops & range Easy -> correct (FOR_001)",
-          "ASK For loops & range Medium -> correct (FOR_003)",
-          "ASK For loops & range Medium -> correct (FOR_004)",
-          "ASK Lists Easy -> wrong (LIST_001)"
+          "ASK:FOR_001:For loops & range:correct",
+          "ASK:FOR_003:For loops & range:correct",
+          "ASK:FOR_004:For loops & range:correct",
+          "ASK:LIST_001:Lists:wrong"
         ],
         "attempted_question_ids": [
           "FOR_001",
@@ -191,12 +191,12 @@
           "Strings": 0.55
         },
         "recent_errors": [
-          "STR_003: Slicing bounds and step evaluation misconception"
+          "Slicing bounds and step evaluation misconception"
         ],
         "recent_actions": [
-          "ASK Strings Easy -> correct (STR_001)",
-          "ASK Strings Easy -> correct (STR_002)",
-          "ASK Strings Medium -> wrong (STR_003)"
+          "ASK:STR_001:Strings:correct",
+          "ASK:STR_002:Strings:correct",
+          "ASK:STR_003:Strings:wrong"
         ],
         "attempted_question_ids": [
           "STR_001",
@@ -238,9 +238,9 @@
         },
         "recent_errors": [],
         "recent_actions": [
-          "ASK Conditionals Easy -> correct (CON_001)",
-          "ASK Conditionals Easy -> correct (CON_002)",
-          "ASK Conditionals Medium -> correct (CON_003)"
+          "ASK:CON_001:Conditionals:correct",
+          "ASK:CON_002:Conditionals:correct",
+          "ASK:CON_003:Conditionals:correct"
         ],
         "attempted_question_ids": [
           "CON_001",
@@ -282,9 +282,9 @@
         },
         "recent_errors": [],
         "recent_actions": [
-          "ASK Boolean expressions Easy -> correct (BOOL_001)",
-          "ASK Boolean expressions Medium -> correct (BOOL_003)",
-          "ASK Boolean expressions Hard -> correct (BOOL_005)"
+          "ASK:BOOL_001:Boolean expressions:correct",
+          "ASK:BOOL_003:Boolean expressions:correct",
+          "ASK:BOOL_005:Boolean expressions:correct"
         ],
         "attempted_question_ids": [
           "BOOL_001",
@@ -325,13 +325,13 @@
           "Scope": 0.62
         },
         "recent_errors": [
-          "SCO_001: Assuming assignment inside a function changes the global variable",
-          "SCO_003: Missing the effect of global declaration"
+          "Assuming assignment inside a function changes the global variable",
+          "Missing the effect of global declaration"
         ],
         "recent_actions": [
-          "ASK Scope Easy -> wrong (SCO_001)",
-          "ASK Scope Easy -> correct (SCO_002)",
-          "ASK Scope Medium -> wrong (SCO_003)"
+          "ASK:SCO_001:Scope:wrong",
+          "ASK:SCO_002:Scope:correct",
+          "ASK:SCO_003:Scope:wrong"
         ],
         "attempted_question_ids": [
           "SCO_001",
@@ -373,15 +373,15 @@
           "While loops": 0.6
         },
         "recent_errors": [
-          "WHI_002: Checking the body before the update",
-          "WHI_005: Assuming the loop stops at the boundary value"
+          "Checking the body before the update",
+          "Assuming the loop stops at the boundary value"
         ],
         "recent_actions": [
-          "ASK While loops Easy -> correct (WHI_001)",
-          "ASK While loops Easy -> wrong (WHI_002)",
-          "ASK While loops Medium -> correct (WHI_003)",
-          "ASK While loops Medium -> correct (WHI_004)",
-          "ASK While loops Hard -> wrong (WHI_005)"
+          "ASK:WHI_001:While loops:correct",
+          "ASK:WHI_002:While loops:wrong",
+          "ASK:WHI_003:While loops:correct",
+          "ASK:WHI_004:While loops:correct",
+          "ASK:WHI_005:While loops:wrong"
         ],
         "attempted_question_ids": [
           "WHI_001",
@@ -427,14 +427,14 @@
           "Dictionaries": 0.3
         },
         "recent_errors": [
-          "DICT_001: Key vs value lookup"
+          "Key vs value lookup"
         ],
         "recent_actions": [
-          "ASK Lists Easy -> correct (LIST_001)",
-          "ASK Lists Medium -> correct (LIST_003)",
-          "ASK Lists Medium -> correct (LIST_004)",
-          "ASK Dictionaries Easy -> wrong (DICT_001)",
-          "EXPLAIN Dictionaries"
+          "ASK:LIST_001:Lists:correct",
+          "ASK:LIST_003:Lists:correct",
+          "ASK:LIST_004:Lists:correct",
+          "ASK:DICT_001:Dictionaries:wrong",
+          "EXPLAIN:Dictionaries"
         ],
         "attempted_question_ids": [
           "LIST_001",
@@ -479,12 +479,12 @@
           "For loops & range": 0.5
         },
         "recent_errors": [
-          "FOR_001: Off-by-one / incorrect range interpretation"
+          "Off-by-one / incorrect range interpretation"
         ],
         "recent_actions": [
-          "ASK For loops & range Easy -> wrong (FOR_001)",
-          "ASK For loops & range Easy -> correct (FOR_002)",
-          "ASK For loops & range Medium -> correct (FOR_003)"
+          "ASK:FOR_001:For loops & range:wrong",
+          "ASK:FOR_002:For loops & range:correct",
+          "ASK:FOR_003:For loops & range:correct"
         ],
         "attempted_question_ids": [
           "FOR_001",
@@ -529,14 +529,14 @@
           "Recursion": 0.3
         },
         "recent_errors": [
-          "REC_003: Tracing recursive calls / combining return values"
+          "Tracing recursive calls / combining return values"
         ],
         "recent_actions": [
-          "ASK Recursion Easy -> correct (REC_001)",
-          "ASK Recursion Medium -> wrong (REC_003)",
-          "ASK Functions Easy -> correct (FUN_002)",
-          "ASK Functions Medium -> correct (FUN_004)",
-          "ASK Functions Hard -> correct (FUN_005)"
+          "ASK:REC_001:Recursion:correct",
+          "ASK:REC_003:Recursion:wrong",
+          "ASK:FUN_002:Functions:correct",
+          "ASK:FUN_004:Functions:correct",
+          "ASK:FUN_005:Functions:correct"
         ],
         "attempted_question_ids": [
           "REC_001",

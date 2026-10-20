@@ -1,0 +1,30 @@
+{
+  "description": "Cấu hình thí nghiệm Phase 6 (run_learning_experiment.py). Tham số dòng lệnh ghi đè giá trị ở đây.",
+  "seed": 0,
+  "repeats": 10,
+  "policies": [
+    "random",
+    "rule"
+  ],
+  "max_steps": 60,
+  "max_turns_without_question": null,
+  "mastery_goal": 0.85,
+  "learners_path": "data/simulated_learners.json",
+  "student_model": {
+    "learning_rate": 0.4,
+    "initial_mastery": 0.0,
+    "history_limit": 10
+  },
+  "question_strategy": "first",
+  "rule_config": {
+    "low": 0.4,
+    "high": 0.75,
+    "advance": 0.85,
+    "weak_prerequisite": 0.6,
+    "unknown_mastery": 0.0
+  },
+  "llm": {
+    "max_retries": 2,
+    "fallback_to_rule": false
+  }
+}

@@ -191,13 +191,18 @@ class LearningEngine:
             return self._record(learner_state, actions, invalid)
 
         result = self.action_executor.execute(decision, learner_state, respond)
-        if result.updated_state is None:
+        if result.updated_state is None or not result.valid:
+            # Executor từ chối (hết câu, thiếu responder...) → state và context giữ nguyên.
             result = replace(result, updated_state=learner_state)
         self._record(learner_state, actions, result)
-        self.context = self._next_context(decision, result)
+        if result.valid:
+            self.context = self._next_context(decision, result)
         return result
 
     # --------------------------------------------------------------- session
+    def questions_exhausted(self, learner_state: LearnerState) -> bool:
+        return len(set(learner_state.attempted_question_ids)) >= len(self.question_bank)
+
     def goal_reached(self, learner_state: LearnerState) -> bool:
         concepts = self.question_bank.get_all_concepts()
         return all(learner_state.mastery.get(c, 0.0) >= self.mastery_goal for c in concepts)
@@ -208,22 +213,40 @@ class LearningEngine:
         respond: Responder | None = None,
         max_steps: int = 100,
         max_consecutive_invalid: int = 3,
+        max_turns_without_question: int | None = None,
+        on_turn: Callable[[TurnResult], None] | None = None,
     ) -> SessionResult:
-        """Chạy nhiều lượt tới khi đạt mục tiêu, hết action, hết bước hoặc lỗi liên tiếp."""
+        """Chạy nhiều lượt tới khi một điều kiện dừng xảy ra.
+
+        stop_reason: goal_reached | questions_exhausted | no_actions | max_steps |
+        too_many_invalid | stalled (quá `max_turns_without_question` lượt hợp lệ liên tiếp
+        mà không hỏi câu nào; None để tắt).
+        on_turn: callback sau mỗi lượt (ví dụ learner mô phỏng cần biết action EXPLAIN/HINT).
+        """
         state = initial_state
         invalid_streak = 0
+        idle_streak = 0
         stop_reason = "max_steps"
         for _ in range(max_steps):
             if self.goal_reached(state):
                 stop_reason = "goal_reached"
                 break
+            if self.questions_exhausted(state):
+                stop_reason = "questions_exhausted"
+                break
             if not self.available_actions(state):
                 stop_reason = "no_actions"
                 break
             result = self.run_turn(state, respond)
+            if on_turn is not None:
+                on_turn(result)
             if result.valid:
                 invalid_streak = 0
                 state = result.updated_state or state
+                idle_streak = 0 if result.question_id else idle_streak + 1
+                if max_turns_without_question is not None and idle_streak >= max_turns_without_question:
+                    stop_reason = "stalled"
+                    break
             else:
                 invalid_streak += 1
                 if invalid_streak >= max_consecutive_invalid:

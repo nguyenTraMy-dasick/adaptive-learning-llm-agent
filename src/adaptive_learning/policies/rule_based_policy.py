@@ -2,7 +2,8 @@
 
 Luật dựa trên project_0 (Phase 4) và bổ sung xử lý prerequisite. Ký hiệu:
 f = focus concept, m = mastery[f] (concept chưa có trong mastery dùng
-`unknown_mastery`, mặc định 0.0), "vừa sai" = câu hỏi gần nhất thuộc f và trả lời sai.
+`unknown_mastery`, mặc định 0.0), "vừa sai" = action ngay trước là ASK trên f và trả lời sai
+(sau EXPLAIN/HINT/REVIEW/ADVANCE thì không còn là "vừa sai").
 Ngưỡng mặc định: low = 0.40, high = 0.75, advance = 0.85, weak_prerequisite = 0.60.
 
 Luật áp dụng theo thứ tự, luật đầu tiên có action hợp lệ được chọn:
@@ -140,7 +141,7 @@ class RuleBasedPolicy(BasePolicy):
             return to_decision(available_actions[0], "R0: no focus and no ADVANCE available, first action")
 
         m = self._mastery(learner_state, focus)
-        wrong = context.last_answer_wrong_on_focus
+        wrong = context.just_answered_wrong
 
         if m >= cfg.advance:
             advance = self._pick_advance(learner_state, available_actions, focus)

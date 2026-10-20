@@ -10,9 +10,14 @@ from adaptive_learning.schemas import LearnerState, Question
 
 @dataclass(frozen=True)
 class StudentModel:
-    """Update mastery with a fixed exponential moving average."""
+    """Update mastery with a fixed exponential moving average.
 
-    learning_rate: float = 0.30
+    learning_rate = 0.40 so that the mastery threshold 0.85 is reachable with the
+    5 questions available per concept (4 consecutive correct answers from 0 give
+    0.870; with 0.30 the ceiling after 5 correct answers was only 0.832).
+    """
+
+    learning_rate: float = 0.40
     initial_mastery: float = 0.0
     history_limit: int = 10
 

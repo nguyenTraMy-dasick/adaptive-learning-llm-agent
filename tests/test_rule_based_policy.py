@@ -54,6 +54,14 @@ class TestRuleBasedPolicy(unittest.TestCase):
                         ctx(RE, RECURSION_INTRODUCED, last=("EXPLAIN", RE, None), last_qid="REC_001", last_correct=False))
         self.assertDecision(d, ActionType.ASK, RE, "Easy", rule="R5")
 
+    def test_not_wrong_anymore_after_round_trip(self):
+        # Sai câu Recursion → ôn Functions → ADVANCE quay lại Recursion: phải hỏi tiếp,
+        # không ôn lại ngay (tránh vòng lặp REVIEW/ADVANCE).
+        mastery = {FU: 0.45, SC: 0.55, CO: 0.9, RE: 0.25}
+        d = self.decide(mastery, ["REC_001", "REC_003"],
+                        ctx(RE, RECURSION_INTRODUCED, last=("ADVANCE", RE, None), last_qid="REC_003", last_correct=False))
+        self.assertDecision(d, ActionType.ASK, RE, "Easy", rule="R5")
+
     def test_r4_hint_on_medium_mastery(self):
         d = self.decide({RE: 0.6, FU: 0.9, SC: 0.9, CO: 0.9}, ["REC_003"],
                         ctx(RE, RECURSION_INTRODUCED, last=("ASK", RE, "Medium"), last_qid="REC_003", last_correct=False))

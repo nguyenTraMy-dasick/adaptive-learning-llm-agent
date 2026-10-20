@@ -34,7 +34,7 @@ sử dụng cho Thành viên 3.
 
 Student model dùng exponential moving average với tham số mặc định:
 
-- `learning_rate = 0.30`
+- `learning_rate = 0.40` (trước đây 0.30; đổi ngày 20/10, xem ghi chú bên dưới)
 - `initial_mastery = 0.0`
 - `history_limit = 10`
 
@@ -47,8 +47,12 @@ new_mastery = old_mastery + learning_rate * (outcome - old_mastery)
 
 Ví dụ:
 
-- Mastery `0.0`, trả lời đúng: `0.0 + 0.3 * (1.0 - 0.0) = 0.3`.
-- Mastery `1.0`, trả lời sai: `1.0 + 0.3 * (0.0 - 1.0) = 0.7`.
+- Mastery `0.0`, trả lời đúng: `0.0 + 0.4 * (1.0 - 0.0) = 0.4`.
+- Mastery `1.0`, trả lời sai: `1.0 + 0.4 * (0.0 - 1.0) = 0.6`.
+
+Vì sao 0.40: mỗi concept chỉ có 5 câu. Với 0.30, trả lời đúng cả 5 câu từ 0 chỉ đạt
+`1 - 0.7^5 = 0.832`, nên ngưỡng advance/mục tiêu 0.85 (project_0) không bao giờ đạt.
+Với 0.40: 4 câu đúng liên tiếp đạt `1 - 0.6^4 = 0.870`, 5 câu đạt `0.922`.
 - Mastery luôn được giới hạn trong `[0.0, 1.0]`.
 
 Concept chưa có trong `LearnerState.mastery` được khởi tạo bằng

@@ -14,13 +14,13 @@ class TestStudentModel(unittest.TestCase):
         model = StudentModel()
         self.assertTrue(model.grade_answer(self.question, " b "))
         self.assertFalse(model.grade_answer(self.question, "A"))
-        self.assertAlmostEqual(model.update_mastery(0.0, True), 0.3)
-        self.assertAlmostEqual(model.update_mastery(1.0, False), 0.7)
+        self.assertAlmostEqual(model.update_mastery(0.0, True), 0.4)
+        self.assertAlmostEqual(model.update_mastery(1.0, False), 0.6)
 
     def test_update_records_correct_answer(self):
         state, correct = StudentModel().update_state(LearnerState(), self.question, "B")
         self.assertTrue(correct)
-        self.assertEqual(state.mastery["Variables & assignment"], 0.3)
+        self.assertAlmostEqual(state.mastery["Variables & assignment"], 0.4)
         self.assertEqual(state.attempted_question_ids, ("VAR_001",))
         self.assertEqual(state.recent_errors, ())
 
@@ -36,6 +36,13 @@ class TestStudentModel(unittest.TestCase):
             LearnerState(attempted_question_ids=("VAR_001",)), self.question, "B"
         )
         self.assertEqual(state.attempted_question_ids, ("VAR_001",))
+
+    def test_mastery_threshold_reachable_within_one_concept(self):
+        # Mỗi concept chỉ có 5 câu: ngưỡng 0.85 phải đạt được sau 4 câu đúng liên tiếp.
+        model, mastery = StudentModel(), 0.0
+        for _ in range(4):
+            mastery = model.update_mastery(mastery, True)
+        self.assertGreaterEqual(mastery, 0.85)
 
     def test_invalid_configuration(self):
         with self.assertRaises(ValueError):

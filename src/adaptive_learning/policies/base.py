@@ -48,6 +48,21 @@ class DecisionContext:
             raise ValueError("step must be >= 0")
 
     @property
+    def just_answered_wrong(self) -> bool:
+        """True nếu action NGAY TRƯỚC là ASK trên focus concept và bị trả lời sai.
+
+        Khác `last_answer_wrong_on_focus`: sau một action khác (EXPLAIN, REVIEW, ADVANCE...)
+        thì không còn là "vừa sai", tránh lặp lại cùng một phản ứng mãi.
+        """
+        last = self.last_action
+        return (
+            self.last_answer_wrong_on_focus
+            and last is not None
+            and last.action_type.value == "ASK"
+            and last.concept == self.focus_concept
+        )
+
+    @property
     def last_answer_wrong_on_focus(self) -> bool:
         """True nếu câu hỏi gần nhất thuộc focus concept và bị trả lời sai."""
         return (

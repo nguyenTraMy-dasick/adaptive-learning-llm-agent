@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "description": "Hồ sơ learner mô phỏng cho Phase 6 (evaluation/run_learning_experiment.py). Ý nghĩa tham số: xem docstring evaluation/simulated_learner.py. Tham số không ghi thì dùng mặc định: practice_gain 0.10, explain_gain 0.15, hint_gain 0.07, review_gain 0.15, prerequisite_weight 0.5, guess 0.25, slip 0.10.",
+  "learners": [
+    {
+      "id": "novice",
+      "description": "Người mới bắt đầu, gần như chưa biết concept nào.",
+      "default_knowledge": 0.05
+    },
+    {
+      "id": "knows_basics",
+      "description": "Đã vững biến, kiểu dữ liệu, biểu thức; chưa học điều khiển, hàm, cấu trúc dữ liệu.",
+      "initial_knowledge": {
+        "Variables & assignment": 0.75,
+        "Data types": 0.75,
+        "Expressions & operators": 0.7,
+        "Strings": 0.65,
+        "Boolean expressions": 0.7
+      },
+      "default_knowledge": 0.05
+    },
+    {
+      "id": "weak_functions",
+      "description": "Khá ở phần cơ bản và rẽ nhánh nhưng hổng Functions/Scope (tiên quyết của Recursion).",
+      "initial_knowledge": {
+        "Variables & assignment": 0.75,
+        "Data types": 0.75,
+        "Expressions & operators": 0.7,
+        "Strings": 0.65,
+        "Boolean expressions": 0.7,
+        "Conditionals": 0.7,
+        "While loops": 0.6,
+        "For loops & range": 0.6,
+        "Functions": 0.15,
+        "Scope": 0.15
+      },
+      "default_knowledge": 0.05
+    },
+    {
+      "id": "fast_learner",
+      "description": "Người mới bắt đầu nhưng học nhanh (hệ số học gấp đôi).",
+      "default_knowledge": 0.05,
+      "practice_gain": 0.2,
+      "explain_gain": 0.3,
+      "hint_gain": 0.14,
+      "review_gain": 0.3
+    },
+    {
+      "id": "slow_learner",
+      "description": "Người mới bắt đầu, học chậm (hệ số học bằng một nửa).",
+      "default_knowledge": 0.05,
+      "practice_gain": 0.05,
+      "explain_gain": 0.075,
+      "hint_gain": 0.035,
+      "review_gain": 0.075
+    },
+    {
+      "id": "near_mastery",
+      "description": "Đã khá ở mọi concept; cần xác nhận và chuyển tiếp nhanh.",
+      "default_knowledge": 0.7
+    }
+  ]
+}
